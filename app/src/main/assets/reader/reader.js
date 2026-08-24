@@ -31,7 +31,10 @@ function installTapZones(doc) {
   })
 }
 
-view.addEventListener('load', event => installTapZones(event.detail.doc))
+view.addEventListener('load', event => {
+  installTapZones(event.detail.doc)
+  send('stage', { name: `chapter:loaded:${event.detail.index}` })
+})
 view.addEventListener('relocate', event => {
   const detail = event.detail ?? {}
   send('relocated', {
@@ -45,17 +48,30 @@ view.addEventListener('relocate', event => {
 async function openBook(command) {
   loading.classList.remove('hidden')
   try {
+    send('stage', { name: 'open:start' })
     view.close?.()
     const book = await makeBook(command.url)
+    send('stage', { name: `book:made:${book.sections?.length ?? 0}` })
     currentBook = book
     book.transformTarget?.addEventListener('data', event => {
       const detail = event.detail
       detail.data = Promise.resolve(detail.data).then(value => normalizeTransformData(value, detail.type))
     })
     await view.open(book)
+    send('stage', { name: 'view:opened' })
     appearance = command.appearance ?? {}
     applyAppearance()
-    await view.init({ lastLocation: command.lastCfi || null, showTextStart: !command.lastCfi })
+    send('stage', { name: 'init:start' })
+    const initProbe = setTimeout(() => {
+      const contents = view.renderer?.getContents?.() ?? []
+      send('stage', { name: `init:pending:contents=${contents.length}:index=${contents[0]?.index ?? -1}` })
+    }, 3000)
+    try {
+      await view.init({ lastLocation: command.lastCfi || null, showTextStart: !command.lastCfi })
+    } finally {
+      clearTimeout(initProbe)
+    }
+    send('stage', { name: 'init:done' })
     send('toc', { items: flattenToc(book.toc) })
     loading.classList.add('hidden')
     send('opened')

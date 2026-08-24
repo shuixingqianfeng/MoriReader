@@ -28,6 +28,7 @@ class ReaderWebViewInstrumentedTest {
         val terminal = CountDownLatch(1)
         val relocatedToChapter = CountDownLatch(1)
         val error = AtomicReference<String?>(null)
+        val lastStage = AtomicReference("not-started")
         val controller = ReaderController()
         val book = BookEntity(
             id = "reader-fixture",
@@ -50,6 +51,7 @@ class ReaderWebViewInstrumentedTest {
             ) { event ->
                 when (event) {
                     ReaderEvent.Opened -> terminal.countDown()
+                    is ReaderEvent.Stage -> lastStage.set(event.name)
                     is ReaderEvent.Error -> {
                         error.set(event.message)
                         terminal.countDown()
@@ -60,7 +62,10 @@ class ReaderWebViewInstrumentedTest {
             }
         }
 
-        assertTrue("Reader did not finish opening", terminal.await(20, TimeUnit.SECONDS))
+        assertTrue(
+            "Reader did not finish opening; last stage=${lastStage.get()}",
+            terminal.await(20, TimeUnit.SECONDS),
+        )
         assertNull("Reader failed to open: ${error.get()}", error.get())
         controller.goToSection(1)
         assertTrue("Reader did not navigate to the text chapter", relocatedToChapter.await(10, TimeUnit.SECONDS))

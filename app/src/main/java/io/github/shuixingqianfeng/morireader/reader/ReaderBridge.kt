@@ -20,7 +20,6 @@ import io.github.shuixingqianfeng.morireader.data.BookEntity
 import io.github.shuixingqianfeng.morireader.data.ReaderPreferences
 import org.json.JSONArray
 import org.json.JSONObject
-import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.FileInputStream
 
@@ -37,6 +36,7 @@ sealed interface ReaderEvent {
     data object Ready : ReaderEvent
     data object CenterTap : ReaderEvent
     data object Opened : ReaderEvent
+    data class Stage(val name: String) : ReaderEvent
     data class Relocated(val location: ReaderLocation) : ReaderEvent
     data class Toc(val items: List<TocItem>) : ReaderEvent
     data class Error(val message: String) : ReaderEvent
@@ -125,30 +125,13 @@ fun ReaderWebView(
                 settings.javaScriptCanOpenWindowsAutomatically = false
                 settings.setSupportMultipleWindows(false)
                 settings.mixedContentMode = android.webkit.WebSettings.MIXED_CONTENT_NEVER_ALLOW
-                // foliate renders chapters in blob: iframes. WebView 124 can leave
-                // those frames pending forever when blockNetworkLoads is enabled.
-                // External requests are still rejected below and the app deliberately
-                // has no INTERNET permission.
-                settings.blockNetworkLoads = false
+                settings.blockNetworkLoads = true
                 if (WebViewFeature.isFeatureSupported(WebViewFeature.START_SAFE_BROWSING)) {
                     WebViewCompat.startSafeBrowsing(context) { }
                 }
                 webViewClient = object : WebViewClient() {
-                    override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
-                        val uri = request.url
-                        if (uri.host == WebViewAssetLoader.DEFAULT_DOMAIN) {
-                            return loader.shouldInterceptRequest(uri)
-                        }
-                        if (uri.scheme == "blob" || uri.scheme == "data") return null
-                        return WebResourceResponse(
-                            "text/plain",
-                            "utf-8",
-                            403,
-                            "Blocked",
-                            emptyMap(),
-                            ByteArrayInputStream(ByteArray(0)),
-                        )
-                    }
+                    override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? =
+                        loader.shouldInterceptRequest(request.url)
 
                     override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean =
                         request.url.host != WebViewAssetLoader.DEFAULT_DOMAIN
@@ -204,6 +187,7 @@ private fun handleReaderMessage(text: String, onEvent: (ReaderEvent) -> Unit) {
     when (json.optString("type")) {
         "ready" -> onEvent(ReaderEvent.Ready)
         "opened" -> onEvent(ReaderEvent.Opened)
+        "stage" -> onEvent(ReaderEvent.Stage(json.optString("name")))
         "centerTap" -> onEvent(ReaderEvent.CenterTap)
         "error" -> onEvent(ReaderEvent.Error(json.optString("message", "阅读器发生错误")))
         "relocated" -> onEvent(
