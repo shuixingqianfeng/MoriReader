@@ -1,6 +1,5 @@
 package io.github.shuixingqianfeng.morireader.reader
 
-import androidx.activity.ComponentActivity
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import io.github.shuixingqianfeng.morireader.data.BookEntity
@@ -16,8 +15,6 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
-
-class ReaderTestActivity : ComponentActivity()
 
 class ReaderWebViewInstrumentedTest {
     @get:Rule

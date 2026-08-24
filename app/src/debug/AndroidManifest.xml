@@ -4,6 +4,6 @@
         <activity
             android:name=".reader.ReaderTestActivity"
             android:exported="false"
-            android:theme="@android:style/Theme.Material.Light.NoActionBar" />
+            android:theme="@style/Theme.MoriReader" />
     </application>
 </manifest>
