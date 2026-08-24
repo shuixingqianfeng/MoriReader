@@ -16,22 +16,24 @@ import java.util.zip.ZipOutputStream
 @RunWith(AndroidJUnit4::class)
 class EpubImporterInstrumentedTest {
     @Test
-    fun parsesMetadataAndCopiesToPrivateStorage() = runBlocking {
-        val context = ApplicationProvider.getApplicationContext<android.content.Context>()
-        val source = File(context.cacheDir, "fixture-${System.nanoTime()}.epub")
-        createFixture(source)
-        val importer = EpubImporter(context)
-        val hash = importer.hash(Uri.fromFile(source))
-        val parsed = importer.copyAndParse(Uri.fromFile(source), hash)
+    fun parsesMetadataAndCopiesToPrivateStorage() {
+        runBlocking {
+            val context = ApplicationProvider.getApplicationContext<android.content.Context>()
+            val source = File(context.cacheDir, "fixture-${System.nanoTime()}.epub")
+            createFixture(source)
+            val importer = EpubImporter(context)
+            val hash = importer.hash(Uri.fromFile(source))
+            val parsed = importer.copyAndParse(Uri.fromFile(source), hash)
 
-        assertEquals("双 BR 测试书", parsed.title)
-        assertEquals("MoriReader 测试", parsed.author)
-        assertEquals("fixture-double-br", parsed.identifier)
-        assertEquals("ltr", parsed.readingDirection)
-        assertTrue(parsed.file.isFile)
+            assertEquals("双 BR 测试书", parsed.title)
+            assertEquals("MoriReader 测试", parsed.author)
+            assertEquals("fixture-double-br", parsed.identifier)
+            assertEquals("ltr", parsed.readingDirection)
+            assertTrue(parsed.file.isFile)
 
-        parsed.file.parentFile?.deleteRecursively()
-        source.delete()
+            parsed.file.parentFile?.deleteRecursively()
+            source.delete()
+        }
     }
 
     private fun createFixture(file: File) {
