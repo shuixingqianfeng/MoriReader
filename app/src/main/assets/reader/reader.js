@@ -1,6 +1,7 @@
 import { makeBook } from '../foliate-js/view.js'
 import { applyRendererAppearance } from './appearance.js'
 import { normalizeTransformData } from './xhtml-normalizer.js'
+import { flattenToc } from './toc.js'
 
 const view = document.querySelector('#reader')
 const loading = document.querySelector('#loading')
@@ -10,11 +11,6 @@ let appearance = {}
 const send = (type, payload = {}) => {
   globalThis.MoriNative?.postMessage(JSON.stringify({ type, ...payload }))
 }
-
-const flattenToc = (items = [], depth = 0) => items.flatMap(item => [
-  { label: item.label ?? '', href: item.href ?? '', depth },
-  ...flattenToc(item.subitems, depth + 1),
-])
 
 function applyAppearance(next = appearance) {
   appearance = { ...appearance, ...next }
