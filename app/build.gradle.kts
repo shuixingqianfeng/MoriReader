@@ -13,9 +13,16 @@ val prepareReaderAssets by tasks.registering(Sync::class) {
         filter { line ->
             if (line.trim() == "this.#iframe.src = src") {
                 """                // MoriReader Android WebView compatibility: blob iframe navigation
-                // can remain at about:blank, so materialize the same document via srcdoc.
+                // can remain at about:blank and srcdoc can report loaded without painting.
+                // Materialize the sanitized chapter in the same-origin blank document and
+                // explicitly continue foliate's layout pipeline after the write completes.
                 fetch(src).then(response => response.text()).then(html => {
-                    this.#iframe.srcdoc = html
+                    const doc = this.#iframe.contentDocument
+                    if (!doc) throw new Error('Reader iframe document is unavailable')
+                    doc.open()
+                    doc.write(html)
+                    doc.close()
+                    this.#iframe.dispatchEvent(new Event('load'))
                 }).catch(() => {
                     this.#iframe.src = src
                 })"""
