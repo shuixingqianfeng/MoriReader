@@ -1,0 +1,33 @@
+:root {
+  color-scheme: light;
+  background: #fff;
+}
+
+html, body, foliate-view {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+body {
+  background: #fff;
+  font-family: system-ui, sans-serif;
+}
+
+#loading {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #74808b;
+  font-size: 14px;
+  background: #fff;
+  transition: opacity 180ms ease;
+  pointer-events: none;
+}
+
+#loading.hidden {
+  opacity: 0;
+}

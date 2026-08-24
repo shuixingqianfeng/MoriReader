@@ -1,0 +1,11 @@
+{
+  "name": "morireader-reader-tests",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test reader-tests/*.test.js"
+  },
+  "devDependencies": {
+    "linkedom": "0.18.12"
+  }
+}
