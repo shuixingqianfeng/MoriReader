@@ -1,5 +1,6 @@
 package io.github.shuixingqianfeng.morireader.reader
 
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import io.github.shuixingqianfeng.morireader.data.BookEntity
@@ -45,7 +46,7 @@ class ReaderWebViewInstrumentedTest {
                 book = book,
                 preferences = ReaderPreferences(),
                 controller = controller,
-                modifier = Modifier,
+                modifier = Modifier.fillMaxSize(),
             ) { event ->
                 when (event) {
                     ReaderEvent.Opened -> terminal.countDown()
