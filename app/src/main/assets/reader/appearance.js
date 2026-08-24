@@ -14,6 +14,7 @@ export function buildAppearanceCss(appearance = {}) {
   return `
     :root { color-scheme: ${appearance.theme === 'DARK' ? 'dark' : 'light'}; }
     html, body { background: ${background} !important; color: ${foreground} !important; }
+    body, body * { color: ${foreground} !important; }
     body { font-size: ${fontSize}px !important; line-height: ${lineHeight} !important; padding-inline: ${margin}px !important; }
     p { margin-block: 0 ${paragraphSpacing}em !important; }
     img, svg { max-width: 100% !important; height: auto !important; margin-inline: auto !important; }

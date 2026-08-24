@@ -2,7 +2,10 @@ package io.github.shuixingqianfeng.morireader.reader
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.toPixelMap
+import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onRoot
 import io.github.shuixingqianfeng.morireader.data.BookEntity
 import io.github.shuixingqianfeng.morireader.data.ReaderPreferences
 import org.junit.Assert.assertNull
@@ -71,6 +74,20 @@ class ReaderWebViewInstrumentedTest {
             composeRule.waitUntil(timeoutMillis = 10_000) { relocatedToChapter.count == 0L }
         } catch (_: Throwable) {
             fail("Reader did not initially open the first readable chapter; last stage=${lastStage.get()}")
+        }
+        composeRule.waitForIdle()
+        val pixels = composeRule.onRoot().captureToImage().toPixelMap()
+        var darkPixelCount = 0
+        for (y in 0 until pixels.height) {
+            for (x in 0 until pixels.width) {
+                val color = pixels[x, y]
+                if (color.red < 0.75f && color.green < 0.75f && color.blue < 0.75f) {
+                    darkPixelCount++
+                }
+            }
+        }
+        if (darkPixelCount < 100) {
+            fail("Reader reported a chapter but painted a blank screen; dark pixels=$darkPixelCount")
         }
     }
 

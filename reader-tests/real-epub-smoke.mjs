@@ -98,6 +98,7 @@ try {
   } catch {
     timedOut = true
   }
+  if (!timedOut) await page.waitForTimeout(250)
   await page.screenshot({ path: screenshotPath, fullPage: true })
   const state = await page.evaluate(() => {
     const view = document.querySelector('#reader')
@@ -108,6 +109,18 @@ try {
       hasRenderer: Boolean(view?.renderer),
       contentCount: contents.length,
       bodyTextLengths: contents.map(({ doc }) => doc.body?.innerText?.length ?? 0),
+      bodyStyles: contents.map(({ doc }) => {
+        const paragraph = doc.querySelector('p')
+        const style = paragraph ? doc.defaultView.getComputedStyle(paragraph) : null
+        const rect = paragraph?.getBoundingClientRect()
+        return {
+          color: style?.color ?? null,
+          display: style?.display ?? null,
+          opacity: style?.opacity ?? null,
+          visibility: style?.visibility ?? null,
+          rect: rect ? { x: rect.x, y: rect.y, width: rect.width, height: rect.height } : null,
+        }
+      }),
       imageCounts: contents.map(({ doc }) => doc.images?.length ?? 0),
       loadedImageCounts: contents.map(({ doc }) => [...(doc.images ?? [])].filter(image => image.complete && image.naturalWidth > 0).length),
       sectionIndex: contents.map(({ index }) => index),

@@ -3,6 +3,7 @@ package io.github.shuixingqianfeng.morireader.reader
 import android.annotation.SuppressLint
 import android.graphics.Color
 import android.net.Uri
+import android.view.View
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
@@ -13,6 +14,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.webkit.JavaScriptReplyProxy
+import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewAssetLoader
 import androidx.webkit.WebViewCompat
 import androidx.webkit.WebViewFeature
@@ -118,6 +120,7 @@ fun ReaderWebView(
             WebView(context).apply {
                 webViewHolder[0] = this
                 setBackgroundColor(Color.WHITE)
+                setLayerType(View.LAYER_TYPE_SOFTWARE, null)
                 settings.javaScriptEnabled = true
                 settings.allowFileAccess = false
                 settings.allowContentAccess = false
@@ -126,6 +129,9 @@ fun ReaderWebView(
                 settings.setSupportMultipleWindows(false)
                 settings.mixedContentMode = android.webkit.WebSettings.MIXED_CONTENT_NEVER_ALLOW
                 settings.blockNetworkLoads = true
+                if (WebViewFeature.isFeatureSupported(WebViewFeature.ALGORITHMIC_DARKENING)) {
+                    WebSettingsCompat.setAlgorithmicDarkeningAllowed(settings, false)
+                }
                 if (WebViewFeature.isFeatureSupported(WebViewFeature.START_SAFE_BROWSING)) {
                     WebViewCompat.startSafeBrowsing(context) { }
                 }
