@@ -98,17 +98,6 @@ try {
   } catch {
     timedOut = true
   }
-  if (!timedOut && !await page.evaluate(() => globalThis.__moriMessages.some(message => message.type === 'error'))) {
-    const targetSection = await page.evaluate(() => {
-      const view = document.querySelector('#reader')
-      return Math.min(5, Math.max(0, (view?.book?.sections?.length ?? 1) - 1))
-    })
-    await page.evaluate(index => document.querySelector('#reader').goTo(index), targetSection)
-    await page.waitForFunction(index => {
-      const contents = document.querySelector('#reader')?.renderer?.getContents?.() ?? []
-      return contents.some(content => content.index === index)
-    }, targetSection, { timeout: 10_000 })
-  }
   await page.screenshot({ path: screenshotPath, fullPage: true })
   const state = await page.evaluate(() => {
     const view = document.querySelector('#reader')
@@ -126,7 +115,21 @@ try {
   })
   process.stdout.write(`${JSON.stringify({ timedOut, state, diagnostics, screenshotPath }, null, 2)}\n`)
   const hasVisibleContent = state.bodyTextLengths.some(Boolean) || state.loadedImageCounts.some(Boolean)
-  if (timedOut || state.messages.some(message => message.type === 'error') || !hasVisibleContent) {
+  const latestRelocation = state.messages.filter(message => message.type === 'relocated').at(-1)
+  const expectedSectionIndex = process.env.EXPECTED_SECTION_INDEX
+  const expectedChapterTitle = process.env.EXPECTED_CHAPTER_TITLE
+  const expectedMinTextLength = Number(process.env.EXPECTED_MIN_TEXT_LENGTH ?? 1)
+  const matchesExpectedSection = expectedSectionIndex == null || latestRelocation?.sectionIndex === Number(expectedSectionIndex)
+  const matchesExpectedTitle = expectedChapterTitle == null || latestRelocation?.chapterTitle === expectedChapterTitle
+  const matchesExpectedTextLength = Math.max(0, ...state.bodyTextLengths) >= expectedMinTextLength
+  if (
+    timedOut ||
+    state.messages.some(message => message.type === 'error') ||
+    !hasVisibleContent ||
+    !matchesExpectedSection ||
+    !matchesExpectedTitle ||
+    !matchesExpectedTextLength
+  ) {
     process.exitCode = 1
   }
 } finally {

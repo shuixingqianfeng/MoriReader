@@ -63,6 +63,7 @@ async function openBook(command) {
     send('stage', { name: 'view:opened' })
     appearance = command.appearance ?? {}
     applyAppearance()
+    const tocItems = flattenToc(book.toc)
     send('stage', { name: 'init:start' })
     const initProbe = setTimeout(() => {
       const contents = view.renderer?.getContents?.() ?? []
@@ -72,12 +73,26 @@ async function openBook(command) {
       })
     }, 3000)
     try {
-      await view.init({ lastLocation: command.lastCfi || null, showTextStart: !command.lastCfi })
+      if (command.lastCfi) {
+        await view.init({
+          lastLocation: command.lastCfi,
+          showTextStart: false,
+        })
+      } else {
+        const firstReadableHref = tocItems.find(item => item.href)?.href
+        if (firstReadableHref) await view.goTo(firstReadableHref)
+        else {
+          await view.init({
+            lastLocation: null,
+            showTextStart: true,
+          })
+        }
+      }
     } finally {
       clearTimeout(initProbe)
     }
     send('stage', { name: 'init:done' })
-    send('toc', { items: flattenToc(book.toc) })
+    send('toc', { items: tocItems })
     loading.classList.add('hidden')
     send('opened')
   } catch (error) {

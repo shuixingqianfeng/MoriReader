@@ -21,7 +21,7 @@ class ReaderWebViewInstrumentedTest {
     val composeRule = createAndroidComposeRule<ReaderTestActivity>()
 
     @Test
-    fun opensEpubWithNestedTocAndNavigatesToChapter() {
+    fun opensEpubWithNestedTocAtFirstReadableChapter() {
         val fixture = File(composeRule.activity.filesDir, "nested-toc-${System.nanoTime()}.epub")
         createFixture(fixture)
         val terminal = CountDownLatch(1)
@@ -67,11 +67,10 @@ class ReaderWebViewInstrumentedTest {
             fail("Reader did not finish opening; last stage=${lastStage.get()}")
         }
         assertNull("Reader failed to open: ${error.get()}", error.get())
-        composeRule.runOnUiThread { controller.goToSection(1) }
         try {
             composeRule.waitUntil(timeoutMillis = 10_000) { relocatedToChapter.count == 0L }
         } catch (_: Throwable) {
-            fail("Reader did not navigate to the text chapter; last stage=${lastStage.get()}")
+            fail("Reader did not initially open the first readable chapter; last stage=${lastStage.get()}")
         }
     }
 
