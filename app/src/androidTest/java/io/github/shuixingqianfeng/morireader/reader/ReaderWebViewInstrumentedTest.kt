@@ -6,13 +6,12 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import io.github.shuixingqianfeng.morireader.data.BookEntity
 import io.github.shuixingqianfeng.morireader.data.ReaderPreferences
 import org.junit.Assert.assertNull
-import org.junit.Assert.assertTrue
+import org.junit.Assert.fail
 import org.junit.Rule
 import org.junit.Test
 import java.io.File
 import java.io.FileOutputStream
 import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
@@ -62,13 +61,18 @@ class ReaderWebViewInstrumentedTest {
             }
         }
 
-        assertTrue(
-            "Reader did not finish opening; last stage=${lastStage.get()}",
-            terminal.await(20, TimeUnit.SECONDS),
-        )
+        try {
+            composeRule.waitUntil(timeoutMillis = 20_000) { terminal.count == 0L }
+        } catch (_: Throwable) {
+            fail("Reader did not finish opening; last stage=${lastStage.get()}")
+        }
         assertNull("Reader failed to open: ${error.get()}", error.get())
-        controller.goToSection(1)
-        assertTrue("Reader did not navigate to the text chapter", relocatedToChapter.await(10, TimeUnit.SECONDS))
+        composeRule.runOnUiThread { controller.goToSection(1) }
+        try {
+            composeRule.waitUntil(timeoutMillis = 10_000) { relocatedToChapter.count == 0L }
+        } catch (_: Throwable) {
+            fail("Reader did not navigate to the text chapter; last stage=${lastStage.get()}")
+        }
     }
 
     private fun createFixture(file: File) {
