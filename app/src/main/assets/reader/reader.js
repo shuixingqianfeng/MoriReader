@@ -1,4 +1,5 @@
 import { makeBook } from '../foliate-js/view.js'
+import { applyRendererAppearance } from './appearance.js'
 import { normalizeTransformData } from './xhtml-normalizer.js'
 
 const view = document.querySelector('#reader')
@@ -15,31 +16,13 @@ const flattenToc = (items = [], depth = 0) => items.flatMap(item => [
   ...flattenToc(item.subitems, depth + 1),
 ])
 
-function themeColors(theme) {
-  if (theme === 'SEPIA') return ['#f6f0e3', '#332d25']
-  if (theme === 'GRAY') return ['#e9edf0', '#263039']
-  if (theme === 'DARK') return ['#16191d', '#d9dde2']
-  return ['#ffffff', '#20252a']
-}
-
 function applyAppearance(next = appearance) {
   appearance = { ...appearance, ...next }
-  if (!view.renderer) return
-  const [background, foreground] = themeColors(appearance.theme)
+  const colors = applyRendererAppearance(view.renderer, appearance)
+  if (!colors) return
+  const { background } = colors
   document.documentElement.style.background = background
   document.body.style.background = background
-  const fontSize = Number(appearance.fontSizeSp ?? 19)
-  const lineHeight = Number(appearance.lineHeight ?? 1.75)
-  const paragraphSpacing = Number(appearance.paragraphSpacingEm ?? 0.8)
-  const margin = Number(appearance.horizontalMarginDp ?? 24)
-  view.renderer.setAttribute('flow', appearance.mode === 'SCROLLED' ? 'scrolled' : 'paginated')
-  view.setStyles(`
-    :root { color-scheme: ${appearance.theme === 'DARK' ? 'dark' : 'light'}; }
-    html, body { background: ${background} !important; color: ${foreground} !important; }
-    body { font-size: ${fontSize}px !important; line-height: ${lineHeight} !important; padding-inline: ${margin}px !important; }
-    p { margin-block: 0 ${paragraphSpacing}em !important; }
-    img, svg { max-width: 100% !important; height: auto !important; margin-inline: auto !important; }
-  `)
 }
 
 function installTapZones(doc) {
