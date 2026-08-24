@@ -1,11 +1,11 @@
 package io.github.shuixingqianfeng.morireader.reader
 
+import android.graphics.Color
+import android.os.SystemClock
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.toPixelMap
-import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
-import androidx.compose.ui.test.onRoot
+import androidx.test.platform.app.InstrumentationRegistry
 import io.github.shuixingqianfeng.morireader.data.BookEntity
 import io.github.shuixingqianfeng.morireader.data.ReaderPreferences
 import org.junit.Assert.assertNull
@@ -76,16 +76,18 @@ class ReaderWebViewInstrumentedTest {
             fail("Reader did not initially open the first readable chapter; last stage=${lastStage.get()}")
         }
         composeRule.waitForIdle()
-        val pixels = composeRule.onRoot().captureToImage().toPixelMap()
+        SystemClock.sleep(300)
+        val screenshot = InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot()
         var darkPixelCount = 0
-        for (y in 0 until pixels.height) {
-            for (x in 0 until pixels.width) {
-                val color = pixels[x, y]
-                if (color.red < 0.75f && color.green < 0.75f && color.blue < 0.75f) {
+        for (y in screenshot.height / 10 until screenshot.height * 9 / 10) {
+            for (x in 0 until screenshot.width) {
+                val pixel = screenshot.getPixel(x, y)
+                if (Color.red(pixel) < 192 && Color.green(pixel) < 192 && Color.blue(pixel) < 192) {
                     darkPixelCount++
                 }
             }
         }
+        screenshot.recycle()
         if (darkPixelCount < 100) {
             fail("Reader reported a chapter but painted a blank screen; dark pixels=$darkPixelCount")
         }
