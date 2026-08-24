@@ -10,7 +10,7 @@ if (!epubArgument) throw new Error('Usage: node real-epub-smoke.mjs <book.epub> 
 
 const epubPath = path.resolve(epubArgument)
 const screenshotPath = path.resolve(screenshotArgument ?? 'build/real-epub-smoke.png')
-const assetsRoot = path.resolve('app/src/main/assets')
+const assetsRoot = path.resolve(process.env.MORI_ASSETS_ROOT ?? 'app/src/main/assets')
 await Promise.all([access(epubPath), access(path.join(assetsRoot, 'reader/index.html'))])
 await mkdir(path.dirname(screenshotPath), { recursive: true })
 

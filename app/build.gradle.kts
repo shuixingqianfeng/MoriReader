@@ -5,6 +5,33 @@ plugins {
     id("com.google.devtools.ksp")
 }
 
+val generatedReaderAssets = layout.buildDirectory.dir("generated/moriReaderAssets")
+val prepareReaderAssets by tasks.registering(Sync::class) {
+    from("src/main/assets")
+    into(generatedReaderAssets)
+    filesMatching("foliate-js/paginator.js") {
+        filter { line ->
+            if (line.trim() == "this.#iframe.src = src") {
+                """                // MoriReader Android WebView compatibility: blob iframe navigation
+                // can remain at about:blank, so materialize the same document via srcdoc.
+                fetch(src).then(response => response.text()).then(html => {
+                    this.#iframe.srcdoc = html
+                }).catch(() => {
+                    this.#iframe.src = src
+                })"""
+            } else {
+                line
+            }
+        }
+    }
+    doLast {
+        val paginator = generatedReaderAssets.get().file("foliate-js/paginator.js").asFile
+        check(paginator.readText().contains("MoriReader Android WebView compatibility")) {
+            "foliate-js paginator compatibility patch was not applied"
+        }
+    }
+}
+
 android {
     namespace = "io.github.shuixingqianfeng.morireader"
     compileSdk = 35
@@ -39,7 +66,11 @@ android {
     ksp {
         arg("room.schemaLocation", "$projectDir/schemas")
     }
+
+    sourceSets.getByName("main").assets.setSrcDirs(listOf(generatedReaderAssets))
 }
+
+tasks.named("preBuild").configure { dependsOn(prepareReaderAssets) }
 
 dependencies {
     val composeBom = platform("androidx.compose:compose-bom:2024.12.01")
