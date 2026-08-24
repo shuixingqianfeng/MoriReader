@@ -1,6 +1,6 @@
 import { makeBook } from '../foliate-js/view.js'
 import { applyRendererAppearance } from './appearance.js'
-import { normalizeTransformData } from './xhtml-normalizer.js'
+import { normalizeTransformData, webViewRenderType } from './xhtml-normalizer.js'
 import { flattenToc } from './toc.js'
 
 const view = document.querySelector('#reader')
@@ -55,7 +55,9 @@ async function openBook(command) {
     currentBook = book
     book.transformTarget?.addEventListener('data', event => {
       const detail = event.detail
-      detail.data = Promise.resolve(detail.data).then(value => normalizeTransformData(value, detail.type))
+      const sourceType = detail.type
+      detail.data = Promise.resolve(detail.data).then(value => normalizeTransformData(value, sourceType))
+      detail.type = webViewRenderType(sourceType)
     })
     await view.open(book)
     send('stage', { name: 'view:opened' })
@@ -64,7 +66,10 @@ async function openBook(command) {
     send('stage', { name: 'init:start' })
     const initProbe = setTimeout(() => {
       const contents = view.renderer?.getContents?.() ?? []
-      send('stage', { name: `init:pending:contents=${contents.length}:index=${contents[0]?.index ?? -1}` })
+      const doc = contents[0]?.doc
+      send('stage', {
+        name: `init:pending:contents=${contents.length}:index=${contents[0]?.index ?? -1}:ready=${doc?.readyState ?? 'none'}:url=${doc?.URL ?? 'none'}:text=${doc?.body?.textContent?.length ?? 0}`,
+      })
     }, 3000)
     try {
       await view.init({ lastLocation: command.lastCfi || null, showTextStart: !command.lastCfi })

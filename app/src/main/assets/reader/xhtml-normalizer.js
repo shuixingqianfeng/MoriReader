@@ -109,3 +109,7 @@ export async function normalizeTransformData(value, type = '') {
   }
   return normalizeXhtml(value)
 }
+
+export function webViewRenderType(type = '') {
+  return /^application\/xhtml\+xml(?:\s*;|$)/i.test(type) ? 'text/html' : type
+}

@@ -8,7 +8,7 @@ globalThis.XMLSerializer = class {
   serializeToString(node) { return node.toString() }
 }
 
-const { normalizeXhtml } = await import('../app/src/main/assets/reader/xhtml-normalizer.js')
+const { normalizeXhtml, webViewRenderType } = await import('../app/src/main/assets/reader/xhtml-normalizer.js')
 const ns = 'http://www.w3.org/1999/xhtml'
 const wrap = body => `<?xml version="1.0"?><html xmlns="${ns}"><head><title>fixture</title></head><body>${body}</body></html>`
 
@@ -48,4 +48,10 @@ test('removes active content while preserving chapter prose', () => {
   assert.equal(doc.querySelector('div').hasAttribute('onclick'), false)
   assert.equal(doc.querySelector('a').hasAttribute('href'), false)
   assert.equal(doc.querySelector('body').textContent, '正文链接')
+})
+
+test('renders XHTML blobs as HTML for Android WebView compatibility', () => {
+  assert.equal(webViewRenderType('application/xhtml+xml'), 'text/html')
+  assert.equal(webViewRenderType('application/xhtml+xml; charset=utf-8'), 'text/html')
+  assert.equal(webViewRenderType('text/css'), 'text/css')
 })
