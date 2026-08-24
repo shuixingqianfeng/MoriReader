@@ -18,7 +18,7 @@ class MoriReaderUiTest {
 
     @Test
     fun emptyLibraryShowsImportAndNavigation() {
-        composeRule.onNodeWithText("书库").assertIsDisplayed()
+        composeRule.onNodeWithTag("library_screen_title").assertIsDisplayed()
         composeRule.onNodeWithText("书架还是空的").assertIsDisplayed()
         composeRule.onNodeWithContentDescription("导入 EPUB").assertIsDisplayed()
         composeRule.onNodeWithTag("tab_LIBRARY").assertIsSelected()
@@ -36,6 +36,6 @@ class MoriReaderUiTest {
         }
         composeRule.waitForIdle()
         composeRule.onNodeWithTag("tab_SEARCH").assertIsSelected()
-        composeRule.onNodeWithText("搜索").assertIsDisplayed()
+        composeRule.onNodeWithText("搜索", useUnmergedTree = true).assertIsDisplayed()
     }
 }
