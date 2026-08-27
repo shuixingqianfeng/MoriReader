@@ -1,5 +1,6 @@
 package io.github.shuixingqianfeng.morireader
 
+import android.graphics.Color
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelected
@@ -9,6 +10,8 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipe
+import androidx.test.platform.app.InstrumentationRegistry
+import org.junit.Assert.fail
 import org.junit.Rule
 import org.junit.Test
 
@@ -22,6 +25,27 @@ class MoriReaderUiTest {
         composeRule.onNodeWithText("书架还是空的").assertIsDisplayed()
         composeRule.onNodeWithContentDescription("导入 EPUB").assertIsDisplayed()
         composeRule.onNodeWithTag("tab_LIBRARY").assertIsSelected()
+    }
+
+    @Test
+    fun appShellPaintsVisiblePixels() {
+        composeRule.onNodeWithTag("library_screen_title").assertIsDisplayed()
+        composeRule.waitForIdle()
+
+        val screenshot = InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot()
+        var darkPixelCount = 0
+        for (y in screenshot.height / 10 until screenshot.height * 9 / 10) {
+            for (x in 0 until screenshot.width) {
+                val pixel = screenshot.getPixel(x, y)
+                if (Color.red(pixel) < 192 && Color.green(pixel) < 192 && Color.blue(pixel) < 192) {
+                    darkPixelCount++
+                }
+            }
+        }
+        screenshot.recycle()
+        if (darkPixelCount < 500) {
+            fail("App semantics were present but the OEM-compatible shell painted blank; dark pixels=$darkPixelCount")
+        }
     }
 
     @Test

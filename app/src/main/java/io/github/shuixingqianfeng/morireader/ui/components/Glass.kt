@@ -17,9 +17,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
 import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.HazeStyle
-import dev.chrisbanes.haze.HazeTint
-import dev.chrisbanes.haze.hazeEffect
 
 @Composable
 fun LiquidGlassSurface(
@@ -30,26 +27,20 @@ fun LiquidGlassSurface(
     strong: Boolean = false,
     content: @Composable BoxScope.() -> Unit,
 ) {
-    val tint = if (strong) Color(0xE6F8FBFF) else Color(0xCFFBFDFF)
-    val style = HazeStyle(
-        backgroundColor = Color(0xFFF5F8FC),
-        tint = HazeTint(tint),
-        blurRadius = if (strong) 30.dp else 22.dp,
-        noiseFactor = 0.018f,
-        fallbackTint = HazeTint(tint),
-    )
+    // Haze's RenderEffect capture renders the complete Compose source layer
+    // transparent on some OEM Android 12/13 GPU drivers. Keep the glass
+    // language deterministic with an opaque translucent-looking surface so
+    // the app shell never disappears on those devices.
+    val top = if (strong) Color(0xFFF9FCFF) else Color(0xFFF7FBFF)
+    val middle = if (strong) Color(0xFFF0F7FD) else Color(0xFFF2F8FD)
+    val bottom = if (strong) Color(0xFFF7FAFD) else Color(0xFFF5F9FC)
     Box(
         modifier = modifier
             .shadow(18.dp, shape, ambientColor = Color(0x1A557A9E), spotColor = Color(0x24506E8A))
             .clip(shape)
-            .hazeEffect(state = hazeState, style = style)
             .background(
                 Brush.linearGradient(
-                    listOf(
-                        Color.White.copy(alpha = 0.42f),
-                        Color(0xFFE7F1FB).copy(alpha = 0.20f),
-                        Color.White.copy(alpha = 0.16f),
-                    ),
+                    listOf(top, middle, bottom),
                 ),
             )
             .border(BorderStroke(1.dp, Color.White.copy(alpha = 0.88f)), shape)

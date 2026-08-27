@@ -26,7 +26,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.hazeSource
 import io.github.shuixingqianfeng.morireader.MainViewModel
 import io.github.shuixingqianfeng.morireader.UiMessage
 import io.github.shuixingqianfeng.morireader.ui.components.GlassBottomNavigation
@@ -75,7 +74,10 @@ fun MoriReaderApp(viewModel: MainViewModel) {
         }
     }
 
-    Box(Modifier.fillMaxSize().background(Color(0xFFF7F8FB)).hazeSource(hazeState)) {
+    // Do not capture the whole app into a Haze RenderEffect layer. Several
+    // OEM GPU drivers render that layer fully transparent, leaving only
+    // overlays such as snackbars visible.
+    Box(Modifier.fillMaxSize().background(Color(0xFFF7F8FB))) {
         val readerBook = books.firstOrNull { it.id == readerBookId }
         if (readerBook != null) {
             ReaderScreen(
