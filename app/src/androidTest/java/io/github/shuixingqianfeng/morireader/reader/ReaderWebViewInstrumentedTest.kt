@@ -91,6 +91,7 @@ class ReaderWebViewInstrumentedTest {
             }
         }
         SystemClock.sleep(450)
+        lastStage.set("reverse-gesture-start")
         repeat(4) {
             composeRule.onNodeWithTag("reader_webview").performTouchInput {
                 swipe(
@@ -149,7 +150,11 @@ class ReaderWebViewInstrumentedTest {
             )
             entry(
                 "EPUB/chapter.xhtml",
-                """<html xmlns="http://www.w3.org/1999/xhtml"><head><title>第一章</title></head><body><p>无版权测试正文第一段。</p><p>无版权测试正文第二段。</p></body></html>""",
+                """<html xmlns="http://www.w3.org/1999/xhtml"><head><title>第一章</title></head><body>${
+                    (1..90).joinToString("") { index ->
+                        "<p>无版权测试正文第${index}段，用于验证快速连续翻页后仍然完整对齐并保持可见。</p>"
+                    }
+                }</body></html>""",
             )
         }
     }
