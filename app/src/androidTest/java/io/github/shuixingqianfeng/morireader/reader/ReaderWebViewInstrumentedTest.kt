@@ -1,17 +1,17 @@
 package io.github.shuixingqianfeng.morireader.reader
 
-import android.graphics.Color
-import android.graphics.Bitmap
 import android.os.SystemClock
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.PixelMap
+import androidx.compose.ui.graphics.toPixelMap
+import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipe
-import androidx.test.platform.app.InstrumentationRegistry
 import io.github.shuixingqianfeng.morireader.data.BookEntity
 import io.github.shuixingqianfeng.morireader.data.ReaderPreferences
 import org.junit.Assert.assertNull
@@ -109,22 +109,19 @@ class ReaderWebViewInstrumentedTest {
         }
         composeRule.waitForIdle()
         SystemClock.sleep(550)
-        val screenshot = InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot()
-        val darkPixelCount = countSampledDarkPixels(screenshot)
-        screenshot.recycle()
+        val pixels = composeRule.onNodeWithTag("reader_webview").captureToImage().toPixelMap()
+        val darkPixelCount = countSampledDarkPixels(pixels)
         if (darkPixelCount < 8) {
             fail("Reader reported a chapter but painted a blank screen; dark pixels=$darkPixelCount")
         }
     }
 
-    private fun countSampledDarkPixels(bitmap: Bitmap): Int {
-        val row = IntArray(bitmap.width)
+    private fun countSampledDarkPixels(pixels: PixelMap): Int {
         var count = 0
-        for (y in bitmap.height / 10 until bitmap.height * 9 / 10 step 6) {
-            bitmap.getPixels(row, 0, bitmap.width, 0, y, bitmap.width, 1)
-            for (x in row.indices step 6) {
-                val pixel = row[x]
-                if (Color.red(pixel) < 192 && Color.green(pixel) < 192 && Color.blue(pixel) < 192) count++
+        for (y in pixels.height / 10 until pixels.height * 9 / 10 step 6) {
+            for (x in 0 until pixels.width step 6) {
+                val pixel = pixels[x, y]
+                if (pixel.red < 0.75f && pixel.green < 0.75f && pixel.blue < 0.75f) count++
             }
         }
         return count

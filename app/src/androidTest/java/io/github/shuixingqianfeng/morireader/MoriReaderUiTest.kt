@@ -1,17 +1,18 @@
 package io.github.shuixingqianfeng.morireader
 
-import android.graphics.Color
-import android.graphics.Bitmap
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.PixelMap
+import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipe
-import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Assert.fail
 import org.junit.Rule
 import org.junit.Test
@@ -33,9 +34,8 @@ class MoriReaderUiTest {
         composeRule.onNodeWithTag("library_screen_title").assertIsDisplayed()
         composeRule.waitForIdle()
 
-        val screenshot = InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot()
-        val darkPixelCount = countSampledDarkPixels(screenshot)
-        screenshot.recycle()
+        val pixels = composeRule.onRoot().captureToImage().toPixelMap()
+        val darkPixelCount = countSampledDarkPixels(pixels)
         if (darkPixelCount < 20) {
             fail("App semantics were present but the OEM-compatible shell painted blank; dark pixels=$darkPixelCount")
         }
@@ -56,14 +56,12 @@ class MoriReaderUiTest {
         composeRule.onNodeWithText("搜索", useUnmergedTree = true).assertIsDisplayed()
     }
 
-    private fun countSampledDarkPixels(bitmap: Bitmap): Int {
-        val row = IntArray(bitmap.width)
+    private fun countSampledDarkPixels(pixels: PixelMap): Int {
         var count = 0
-        for (y in bitmap.height / 10 until bitmap.height * 9 / 10 step 6) {
-            bitmap.getPixels(row, 0, bitmap.width, 0, y, bitmap.width, 1)
-            for (x in row.indices step 6) {
-                val pixel = row[x]
-                if (Color.red(pixel) < 192 && Color.green(pixel) < 192 && Color.blue(pixel) < 192) count++
+        for (y in pixels.height / 10 until pixels.height * 9 / 10 step 6) {
+            for (x in 0 until pixels.width step 6) {
+                val pixel = pixels[x, y]
+                if (pixel.red < 0.75f && pixel.green < 0.75f && pixel.blue < 0.75f) count++
             }
         }
         return count
