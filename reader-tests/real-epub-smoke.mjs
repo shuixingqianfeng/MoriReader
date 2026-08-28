@@ -102,39 +102,43 @@ try {
   await page.screenshot({ path: screenshotPath, fullPage: true })
   const state = await page.evaluate(() => {
     const view = document.querySelector('#reader')
-    const contents = view?.renderer?.getContents?.() ?? []
+    const chapter = document.querySelector('#chapter')
+    const paragraph = chapter?.querySelector('p')
+    const paragraphStyle = paragraph ? getComputedStyle(paragraph) : null
+    const paragraphRect = paragraph?.getBoundingClientRect()
     return {
       messages: globalThis.__moriMessages,
       loadingHidden: document.querySelector('#loading')?.classList.contains('hidden'),
-      hasRenderer: Boolean(view?.renderer),
-      contentCount: contents.length,
-      bodyTextLengths: contents.map(({ doc }) => doc.body?.innerText?.length ?? 0),
-      bodyStyles: contents.map(({ doc }) => {
-        const paragraph = doc.querySelector('p')
-        const style = paragraph ? doc.defaultView.getComputedStyle(paragraph) : null
-        const rect = paragraph?.getBoundingClientRect()
-        return {
-          color: style?.color ?? null,
-          display: style?.display ?? null,
-          opacity: style?.opacity ?? null,
-          visibility: style?.visibility ?? null,
-          rect: rect ? { x: rect.x, y: rect.y, width: rect.width, height: rect.height } : null,
-        }
-      }),
-      imageCounts: contents.map(({ doc }) => doc.images?.length ?? 0),
-      loadedImageCounts: contents.map(({ doc }) => [...(doc.images ?? [])].filter(image => image.complete && image.naturalWidth > 0).length),
-      sectionIndex: contents.map(({ index }) => index),
+      hasDirectRenderer: Boolean(view && chapter),
+      chapterTextLength: chapter?.innerText?.length ?? 0,
+      paragraphStyle: {
+        color: paragraphStyle?.color ?? null,
+        display: paragraphStyle?.display ?? null,
+        opacity: paragraphStyle?.opacity ?? null,
+        visibility: paragraphStyle?.visibility ?? null,
+        rect: paragraphRect ? {
+          x: paragraphRect.x,
+          y: paragraphRect.y,
+          width: paragraphRect.width,
+          height: paragraphRect.height,
+        } : null,
+      },
+      imageCount: chapter?.querySelectorAll('img').length ?? 0,
+      loadedImageCount: [...(chapter?.querySelectorAll('img') ?? [])]
+        .filter(image => image.complete && image.naturalWidth > 0).length,
+      scrollWidth: view?.scrollWidth ?? 0,
+      clientWidth: view?.clientWidth ?? 0,
     }
   })
   process.stdout.write(`${JSON.stringify({ timedOut, state, diagnostics, screenshotPath }, null, 2)}\n`)
-  const hasVisibleContent = state.bodyTextLengths.some(Boolean) || state.loadedImageCounts.some(Boolean)
+  const hasVisibleContent = state.chapterTextLength > 0 || state.loadedImageCount > 0
   const latestRelocation = state.messages.filter(message => message.type === 'relocated').at(-1)
   const expectedSectionIndex = process.env.EXPECTED_SECTION_INDEX
   const expectedChapterTitle = process.env.EXPECTED_CHAPTER_TITLE
   const expectedMinTextLength = Number(process.env.EXPECTED_MIN_TEXT_LENGTH ?? 1)
   const matchesExpectedSection = expectedSectionIndex == null || latestRelocation?.sectionIndex === Number(expectedSectionIndex)
   const matchesExpectedTitle = expectedChapterTitle == null || latestRelocation?.chapterTitle === expectedChapterTitle
-  const matchesExpectedTextLength = Math.max(0, ...state.bodyTextLengths) >= expectedMinTextLength
+  const matchesExpectedTextLength = state.chapterTextLength >= expectedMinTextLength
   if (
     timedOut ||
     state.messages.some(message => message.type === 'error') ||

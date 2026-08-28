@@ -1,29 +1,111 @@
 :root {
   color-scheme: light;
-  background: #fff;
+  --reader-background: #ffffff;
+  --reader-foreground: #20252a;
+  --reader-margin: 24px;
+  --reader-font-size: 19px;
+  --reader-line-height: 1.75;
+  --reader-paragraph-spacing: 0.8em;
+  background: var(--reader-background);
 }
 
-html, body, foliate-view {
+html,
+body {
   width: 100%;
   height: 100%;
   margin: 0;
   padding: 0;
   overflow: hidden;
+  background: var(--reader-background);
 }
 
 body {
-  background: #fff;
-  font-family: system-ui, sans-serif;
+  color: var(--reader-foreground);
+  font-family: system-ui, -apple-system, sans-serif;
+  overscroll-behavior: none;
+  touch-action: pan-x pan-y;
+}
+
+#reader {
+  position: fixed;
+  inset: 0;
+  box-sizing: border-box;
+  background: var(--reader-background);
+  scrollbar-width: none;
+}
+
+#reader::-webkit-scrollbar {
+  display: none;
+}
+
+#chapter {
+  box-sizing: border-box;
+  min-height: 100%;
+  margin: 0;
+  padding: 32px var(--reader-margin) 40px;
+  color: var(--reader-foreground);
+  font-size: var(--reader-font-size);
+  line-height: var(--reader-line-height);
+  overflow-wrap: anywhere;
+  text-rendering: optimizeLegibility;
+}
+
+#chapter,
+#chapter * {
+  color: inherit !important;
+}
+
+#chapter p {
+  margin-block: 0 var(--reader-paragraph-spacing) !important;
+}
+
+#chapter img,
+#chapter svg,
+#chapter video,
+#chapter canvas {
+  max-width: 100% !important;
+  height: auto !important;
+}
+
+#reader.paginated {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: auto;
+}
+
+#reader.paginated #chapter {
+  width: 100vw;
+  height: 100%;
+  min-height: 0;
+  column-width: calc(100vw - (2 * var(--reader-margin)));
+  column-gap: calc(2 * var(--reader-margin));
+  column-fill: auto;
+  overflow: visible;
+}
+
+#reader.scrolled {
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+#reader.scrolled #chapter {
+  width: min(100%, 760px);
+  margin-inline: auto;
+}
+
+#chapter:empty::before {
+  content: '';
 }
 
 #loading {
   position: fixed;
   inset: 0;
+  z-index: 10;
   display: grid;
   place-items: center;
   color: #74808b;
   font-size: 14px;
-  background: #fff;
+  background: var(--reader-background);
   transition: opacity 180ms ease;
   pointer-events: none;
 }

@@ -1,6 +1,34 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { applyRendererAppearance, buildAppearanceCss } from '../app/src/main/assets/reader/appearance.js'
+import {
+  applyDocumentAppearance,
+  applyRendererAppearance,
+  buildAppearanceCss,
+} from '../app/src/main/assets/reader/appearance.js'
+
+test('applies mode and CSS to the direct Android renderer', () => {
+  const classes = new Set()
+  const reader = {
+    classList: {
+      toggle(name, enabled) {
+        if (enabled) classes.add(name)
+        else classes.delete(name)
+      },
+    },
+  }
+  const style = { textContent: '' }
+
+  const colors = applyDocumentAppearance(reader, style, {
+    mode: 'SCROLLED',
+    theme: 'SEPIA',
+    horizontalMarginDp: 28,
+  })
+
+  assert.equal(classes.has('scrolled'), true)
+  assert.equal(classes.has('paginated'), false)
+  assert.match(style.textContent, /--reader-margin: 28px/)
+  assert.deepEqual(colors, { background: '#f6f0e3', foreground: '#332d25' })
+})
 
 test('applies flow and CSS through the foliate renderer API', () => {
   const calls = []
@@ -22,7 +50,7 @@ test('applies flow and CSS through the foliate renderer API', () => {
   assert.equal(calls[1][0], 'setStyles')
   assert.match(calls[1][1], /font-size: 21px/)
   assert.match(calls[1][1], /line-height: 1.8/)
-  assert.match(calls[1][1], /padding-inline: 28px/)
+  assert.match(calls[1][1], /--reader-margin: 28px/)
   assert.deepEqual(colors, { background: '#f6f0e3', foreground: '#332d25' })
 })
 

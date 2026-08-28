@@ -3,12 +3,15 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' blob: 'unsafe-inline'; img-src 'self' blob: data:; font-src 'self' blob: data:; connect-src 'self' blob:; frame-src blob:; worker-src blob:">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' blob: 'unsafe-inline'; img-src 'self' blob: data:; font-src 'self' blob: data:; connect-src 'self' blob:; worker-src blob:">
   <title>MoriReader</title>
   <link rel="stylesheet" href="reader.css">
+  <style id="appearance-style"></style>
 </head>
 <body>
-  <foliate-view id="reader"></foliate-view>
+  <main id="reader" class="paginated" aria-live="polite">
+    <article id="chapter"></article>
+  </main>
   <div id="loading" role="status">正在打开书籍…</div>
   <script type="module" src="reader.js"></script>
 </body>
