@@ -101,10 +101,6 @@ body {
   background: linear-gradient(90deg, transparent 58%, rgba(38, 47, 55, 0.06) 76%, rgba(20, 28, 35, 0.22) 100%);
 }
 
-#page-turn-shadow.previous {
-  transform: scaleX(-1);
-}
-
 #reader.scrolled #chapter {
   width: min(100%, 760px);
   margin-inline: auto;

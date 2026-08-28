@@ -270,44 +270,35 @@ async function turnPage(direction, operation) {
 
   turningPage = true
   const nextDirection = direction === 'next'
-  reader.style.transformOrigin = nextDirection ? 'left center' : 'right center'
-  pageTurnShadow.classList.toggle('previous', !nextDirection)
+  pageTurnShadow.style.background = nextDirection
+    ? 'linear-gradient(90deg, transparent 54%, rgba(38,47,55,.05) 72%, rgba(20,28,35,.24) 100%)'
+    : 'linear-gradient(270deg, transparent 54%, rgba(38,47,55,.05) 72%, rgba(20,28,35,.24) 100%)'
   try {
-    const outgoing = reader.animate([
-      { transform: 'perspective(1200px) rotateY(0deg) translateX(0)', filter: 'brightness(1)' },
-      {
-        transform: `perspective(1200px) rotateY(${nextDirection ? -9 : 9}deg) translateX(${nextDirection ? -2.5 : 2.5}%)`,
-        filter: 'brightness(0.9)',
-      },
-    ], { duration: 145, easing: 'cubic-bezier(.35,.05,.7,.2)', fill: 'both' })
     const shadowOut = pageTurnShadow.animate(
-      [{ opacity: 0 }, { opacity: 0.72 }],
+      [
+        { opacity: 0, transform: `translateX(${nextDirection ? 104 : -104}%)` },
+        { opacity: 0.88, transform: 'translateX(0)' },
+      ],
       { duration: 145, easing: 'ease-in', fill: 'both' },
     )
-    await Promise.all([animationFinished(outgoing), animationFinished(shadowOut)])
+    await animationFinished(shadowOut)
     await operation()
     snapToCurrentPage()
-    outgoing.cancel()
     shadowOut.cancel()
 
-    const incoming = reader.animate([
-      {
-        transform: `perspective(1200px) rotateY(${nextDirection ? 7 : -7}deg) translateX(${nextDirection ? 2 : -2}%)`,
-        filter: 'brightness(0.92)',
-      },
-      { transform: 'perspective(1200px) rotateY(0deg) translateX(0)', filter: 'brightness(1)' },
-    ], { duration: 185, easing: 'cubic-bezier(.2,.75,.25,1)', fill: 'both' })
     const shadowIn = pageTurnShadow.animate(
-      [{ opacity: 0.55 }, { opacity: 0 }],
+      [
+        { opacity: 0.72, transform: 'translateX(0)' },
+        { opacity: 0, transform: `translateX(${nextDirection ? -104 : 104}%)` },
+      ],
       { duration: 185, easing: 'ease-out', fill: 'both' },
     )
-    await Promise.all([animationFinished(incoming), animationFinished(shadowIn)])
-    incoming.cancel()
+    await animationFinished(shadowIn)
     shadowIn.cancel()
   } finally {
-    reader.style.transformOrigin = ''
-    pageTurnShadow.classList.remove('previous')
     pageTurnShadow.style.opacity = '0'
+    pageTurnShadow.style.transform = 'none'
+    pageTurnShadow.style.background = ''
     snapToCurrentPage()
     scheduleRelocation()
     turningPage = false
