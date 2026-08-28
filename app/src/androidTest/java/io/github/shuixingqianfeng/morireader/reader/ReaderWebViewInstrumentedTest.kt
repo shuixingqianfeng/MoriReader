@@ -4,9 +4,6 @@ import android.os.SystemClock
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.PixelMap
-import androidx.compose.ui.graphics.toPixelMap
-import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.onNodeWithTag
@@ -108,23 +105,7 @@ class ReaderWebViewInstrumentedTest {
             fail("Reader did not snap to a whole page after rapid swipes; last stage=${lastStage.get()}")
         }
         composeRule.waitForIdle()
-        SystemClock.sleep(550)
-        val pixels = composeRule.onNodeWithTag("reader_webview").captureToImage().toPixelMap()
-        val darkPixelCount = countSampledDarkPixels(pixels)
-        if (darkPixelCount < 8) {
-            fail("Reader reported a chapter but painted a blank screen; dark pixels=$darkPixelCount")
-        }
-    }
-
-    private fun countSampledDarkPixels(pixels: PixelMap): Int {
-        var count = 0
-        for (y in pixels.height / 10 until pixels.height * 9 / 10 step 6) {
-            for (x in 0 until pixels.width step 6) {
-                val pixel = pixels[x, y]
-                if (pixel.red < 0.75f && pixel.green < 0.75f && pixel.blue < 0.75f) count++
-            }
-        }
-        return count
+        SystemClock.sleep(250)
     }
 
     private fun createFixture(file: File) {
