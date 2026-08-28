@@ -47,6 +47,7 @@ import androidx.compose.ui.unit.sp
 import dev.chrisbanes.haze.HazeState
 import io.github.shuixingqianfeng.morireader.data.BookEntity
 import io.github.shuixingqianfeng.morireader.data.DailyReading
+import io.github.shuixingqianfeng.morireader.data.PageTurnEffect
 import io.github.shuixingqianfeng.morireader.data.ReaderMode
 import io.github.shuixingqianfeng.morireader.data.ReaderPreferences
 import io.github.shuixingqianfeng.morireader.data.ReaderTheme
@@ -202,7 +203,23 @@ fun SettingsScreen(
             }
         }
         item {
-            Text("MoriReader 0.1.0\n纯本地 · 无账号 · 无广告 · 无付费", color = Color(0xFF76818B), modifier = Modifier.padding(8.dp))
+            SettingCard(hazeState, "翻页效果", if (preferences.pageTurnEffect == PageTurnEffect.SIMULATION) "仿真翻页" else "简洁翻页") {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    FilterChip(
+                        preferences.pageTurnEffect == PageTurnEffect.DIRECT,
+                        { onUpdate { it.copy(pageTurnEffect = PageTurnEffect.DIRECT) } },
+                        { Text("简洁") },
+                    )
+                    FilterChip(
+                        preferences.pageTurnEffect == PageTurnEffect.SIMULATION,
+                        { onUpdate { it.copy(pageTurnEffect = PageTurnEffect.SIMULATION) } },
+                        { Text("仿真") },
+                    )
+                }
+            }
+        }
+        item {
+            Text("MoriReader 0.1.3", color = Color(0xFF76818B), modifier = Modifier.padding(8.dp))
         }
     }
 }

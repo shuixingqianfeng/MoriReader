@@ -4,7 +4,12 @@ import android.graphics.Color
 import android.os.SystemClock
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.swipe
 import androidx.test.platform.app.InstrumentationRegistry
 import io.github.shuixingqianfeng.morireader.data.BookEntity
 import io.github.shuixingqianfeng.morireader.data.ReaderPreferences
@@ -49,7 +54,7 @@ class ReaderWebViewInstrumentedTest {
                 book = book,
                 preferences = ReaderPreferences(),
                 controller = controller,
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.fillMaxSize().testTag("reader_webview"),
             ) { event ->
                 when (event) {
                     ReaderEvent.Opened -> terminal.countDown()
@@ -75,8 +80,33 @@ class ReaderWebViewInstrumentedTest {
         } catch (_: Throwable) {
             fail("Reader did not initially open the first readable chapter; last stage=${lastStage.get()}")
         }
+        lastStage.set("gesture-start")
+        repeat(4) {
+            composeRule.onNodeWithTag("reader_webview").performTouchInput {
+                swipe(
+                    start = Offset(width * 0.86f, height * 0.5f),
+                    end = Offset(width * 0.14f, height * 0.5f),
+                    durationMillis = 55,
+                )
+            }
+        }
+        SystemClock.sleep(450)
+        repeat(4) {
+            composeRule.onNodeWithTag("reader_webview").performTouchInput {
+                swipe(
+                    start = Offset(width * 0.14f, height * 0.5f),
+                    end = Offset(width * 0.86f, height * 0.5f),
+                    durationMillis = 55,
+                )
+            }
+        }
+        try {
+            composeRule.waitUntil(timeoutMillis = 5_000) { lastStage.get().startsWith("page:aligned:") }
+        } catch (_: Throwable) {
+            fail("Reader did not snap to a whole page after rapid swipes; last stage=${lastStage.get()}")
+        }
         composeRule.waitForIdle()
-        SystemClock.sleep(300)
+        SystemClock.sleep(550)
         val screenshot = InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot()
         var darkPixelCount = 0
         for (y in screenshot.height / 10 until screenshot.height * 9 / 10) {

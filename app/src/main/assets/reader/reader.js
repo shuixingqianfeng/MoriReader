@@ -7,6 +7,7 @@ const reader = document.querySelector('#reader')
 const chapter = document.querySelector('#chapter')
 const loading = document.querySelector('#loading')
 const appearanceStyle = document.querySelector('#appearance-style')
+const pageTurnShadow = document.querySelector('#page-turn-shadow')
 
 let currentBook = null
 let currentSectionIndex = -1
@@ -18,6 +19,7 @@ let tocItems = []
 let chapterTitles = new Map()
 let relocationFrame = 0
 let suppressNextClick = false
+let turningPage = false
 
 const send = (type, payload = {}) => {
   globalThis.MoriNative?.postMessage(JSON.stringify({ type, ...payload }))
@@ -50,7 +52,7 @@ function applyAppearance(next = appearance) {
       reader.scrollTop = Math.round(oldProgress * Math.max(0, reader.scrollHeight - reader.clientHeight))
     } else {
       currentPage = Math.round(oldProgress * Math.max(0, pageCount() - 1))
-      reader.scrollLeft = currentPage * reader.clientWidth
+      snapToCurrentPage()
     }
     scheduleRelocation()
   })
@@ -58,6 +60,14 @@ function applyAppearance(next = appearance) {
 
 function pageCount() {
   return Math.max(1, Math.ceil((reader.scrollWidth - 1) / Math.max(1, reader.clientWidth)))
+}
+
+function snapToCurrentPage() {
+  if (appearance.mode === 'SCROLLED') return
+  currentPage = Math.max(0, Math.min(pageCount() - 1, currentPage))
+  const alignedLeft = currentPage * reader.clientWidth
+  if (Math.abs(reader.scrollLeft - alignedLeft) > 0.5) reader.scrollLeft = alignedLeft
+  send('stage', { name: `page:aligned:${currentPage}:left=${Math.round(reader.scrollLeft)}` })
 }
 
 function sectionProgress() {
@@ -124,7 +134,7 @@ function revealTarget(identity) {
     const readerRect = reader.getBoundingClientRect()
     currentPage = Math.max(0, Math.min(pageCount() - 1,
       Math.floor((reader.scrollLeft + rect.left - readerRect.left) / Math.max(1, reader.clientWidth))))
-    reader.scrollLeft = currentPage * reader.clientWidth
+    snapToCurrentPage()
   }
   return true
 }
@@ -135,21 +145,19 @@ async function displaySection(index, options = {}) {
   send('stage', { name: `chapter:loading:${index}` })
 
   const previousSection = currentBook.sections[currentSectionIndex]
-  chapter.replaceChildren()
-  removeChapterStyles()
-  previousSection?.unload?.()
-  currentSectionDocument = null
-  currentSectionUrl = null
-
   const url = await section.load()
   if (!url) throw new Error(`章节无法加载：${index}`)
-  currentSectionUrl = url
   const response = await fetch(url)
   if (!response.ok) throw new Error(`章节读取失败：${response.status}`)
   const html = await response.text()
   const sourceDocument = new DOMParser().parseFromString(html, 'text/html')
   if (!sourceDocument.body) throw new Error(`章节正文无效：${index}`)
 
+  chapter.replaceChildren()
+  removeChapterStyles()
+  previousSection?.unload?.()
+  currentSectionDocument = null
+  currentSectionUrl = url
   installChapterStyles(sourceDocument)
   const fragment = document.createDocumentFragment()
   for (const node of [...sourceDocument.body.childNodes]) fragment.append(document.importNode(node, true))
@@ -168,11 +176,12 @@ async function displaySection(index, options = {}) {
     if (appearance.mode === 'SCROLLED') reader.scrollTop = Math.max(0, reader.scrollHeight - reader.clientHeight)
     else {
       currentPage = pageCount() - 1
-      reader.scrollLeft = currentPage * reader.clientWidth
+      snapToCurrentPage()
     }
   } else if (!revealTarget(identity)) {
     currentPage = 0
     reader.scrollTo({ left: 0, top: 0, behavior: 'auto' })
+    snapToCurrentPage()
   }
   send('stage', { name: `chapter:loaded:${index}:text=${chapter.innerText.length}:pages=${pageCount()}` })
   emitRelocation()
@@ -206,7 +215,7 @@ async function goToCfi(cfi) {
   await displaySection(resolved.index, { anchor: resolved.anchor })
 }
 
-async function next() {
+async function moveNext() {
   if (!currentBook) return
   if (appearance.mode === 'SCROLLED') {
     const max = Math.max(0, reader.scrollHeight - reader.clientHeight)
@@ -217,7 +226,7 @@ async function next() {
     }
   } else if (currentPage < pageCount() - 1) {
     currentPage += 1
-    reader.scrollLeft = currentPage * reader.clientWidth
+    snapToCurrentPage()
     scheduleRelocation()
     return
   }
@@ -225,7 +234,7 @@ async function next() {
   if (index >= 0) await displaySection(index)
 }
 
-async function previous() {
+async function movePrevious() {
   if (!currentBook) return
   if (appearance.mode === 'SCROLLED') {
     if (reader.scrollTop > 4) {
@@ -235,13 +244,78 @@ async function previous() {
     }
   } else if (currentPage > 0) {
     currentPage -= 1
-    reader.scrollLeft = currentPage * reader.clientWidth
+    snapToCurrentPage()
     scheduleRelocation()
     return
   }
   const index = adjacentReadableIndex(currentSectionIndex, -1)
   if (index >= 0) await displaySection(index, { atEnd: true })
 }
+
+const animationFinished = animation => animation.finished.catch(() => undefined)
+
+async function turnPage(direction, operation) {
+  if (turningPage || !currentBook) return
+  const simulated = appearance.mode !== 'SCROLLED' && appearance.pageTurnEffect === 'SIMULATION'
+  if (!simulated) {
+    turningPage = true
+    try {
+      await operation()
+      snapToCurrentPage()
+    } finally {
+      turningPage = false
+    }
+    return
+  }
+
+  turningPage = true
+  const nextDirection = direction === 'next'
+  reader.style.transformOrigin = nextDirection ? 'left center' : 'right center'
+  pageTurnShadow.classList.toggle('previous', !nextDirection)
+  try {
+    const outgoing = reader.animate([
+      { transform: 'perspective(1200px) rotateY(0deg) translateX(0)', filter: 'brightness(1)' },
+      {
+        transform: `perspective(1200px) rotateY(${nextDirection ? -9 : 9}deg) translateX(${nextDirection ? -2.5 : 2.5}%)`,
+        filter: 'brightness(0.9)',
+      },
+    ], { duration: 145, easing: 'cubic-bezier(.35,.05,.7,.2)', fill: 'both' })
+    const shadowOut = pageTurnShadow.animate(
+      [{ opacity: 0 }, { opacity: 0.72 }],
+      { duration: 145, easing: 'ease-in', fill: 'both' },
+    )
+    await Promise.all([animationFinished(outgoing), animationFinished(shadowOut)])
+    await operation()
+    snapToCurrentPage()
+    outgoing.cancel()
+    shadowOut.cancel()
+
+    const incoming = reader.animate([
+      {
+        transform: `perspective(1200px) rotateY(${nextDirection ? 7 : -7}deg) translateX(${nextDirection ? 2 : -2}%)`,
+        filter: 'brightness(0.92)',
+      },
+      { transform: 'perspective(1200px) rotateY(0deg) translateX(0)', filter: 'brightness(1)' },
+    ], { duration: 185, easing: 'cubic-bezier(.2,.75,.25,1)', fill: 'both' })
+    const shadowIn = pageTurnShadow.animate(
+      [{ opacity: 0.55 }, { opacity: 0 }],
+      { duration: 185, easing: 'ease-out', fill: 'both' },
+    )
+    await Promise.all([animationFinished(incoming), animationFinished(shadowIn)])
+    incoming.cancel()
+    shadowIn.cancel()
+  } finally {
+    reader.style.transformOrigin = ''
+    pageTurnShadow.classList.remove('previous')
+    pageTurnShadow.style.opacity = '0'
+    snapToCurrentPage()
+    scheduleRelocation()
+    turningPage = false
+  }
+}
+
+const next = () => turnPage('next', moveNext)
+const previous = () => turnPage('previous', movePrevious)
 
 async function openBook(command) {
   loading.classList.remove('hidden')
@@ -353,17 +427,28 @@ reader.addEventListener('touchstart', event => {
   const touch = event.changedTouches[0]
   touchStart = touch ? { x: touch.clientX, y: touch.clientY } : null
 }, { passive: true })
+reader.addEventListener('touchmove', event => {
+  if (appearance.mode !== 'SCROLLED' && appearance.swipeEnabled !== false && touchStart) {
+    event.preventDefault()
+  }
+}, { passive: false })
 reader.addEventListener('touchend', event => {
   const touch = event.changedTouches[0]
   if (!touchStart || !touch) return
   const deltaX = touch.clientX - touchStart.x
   const deltaY = touch.clientY - touchStart.y
   touchStart = null
+  if (appearance.swipeEnabled === false) return
   if (Math.abs(deltaX) < 48 || Math.abs(deltaX) < Math.abs(deltaY) * 1.2) return
   suppressNextClick = true
   const action = deltaX < 0 ? next() : previous()
   action.catch(error => send('error', { message: error.message }))
 })
+reader.addEventListener('touchcancel', () => {
+  touchStart = null
+  snapToCurrentPage()
+})
+window.addEventListener('resize', () => requestAnimationFrame(snapToCurrentPage))
 
 if (globalThis.MoriNative) {
   globalThis.MoriNative.onmessage = event => handleCommand(event.data)

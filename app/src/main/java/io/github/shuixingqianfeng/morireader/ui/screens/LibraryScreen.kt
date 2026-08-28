@@ -19,9 +19,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.AutoStories
+import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.FileOpen
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -77,7 +79,14 @@ fun LibraryScreen(
                     fontWeight = FontWeight.Black,
                 )
                 Spacer(Modifier.weight(1f))
-                IconButton(onClick = onImport) { Icon(Icons.Outlined.Add, contentDescription = "导入 EPUB", modifier = Modifier.size(30.dp)) }
+                LiquidGlassSurface(
+                    hazeState,
+                    modifier = Modifier.size(48.dp),
+                    shape = CircleShape,
+                    strong = true,
+                ) {
+                    IconButton(onClick = onImport) { Icon(Icons.Outlined.Add, contentDescription = "导入 EPUB", modifier = Modifier.size(28.dp)) }
+                }
             }
         }
         item {
@@ -140,22 +149,30 @@ private fun TodayProgressCard(
                     colors = ButtonDefaults.buttonColors(containerColor = Color.White.copy(alpha = 0.78f), contentColor = Color(0xFF356F9D)),
                 ) { Text(if (recent == null) "导入后开始阅读" else "继续阅读", fontWeight = FontWeight.SemiBold) }
             }
-            ProgressRing(percent, minutes.toInt())
+            ProgressRing(hazeState, percent, minutes.toInt())
         }
     }
 }
 
 @Composable
-private fun ProgressRing(percent: Int, minutes: Int) {
-    Box(Modifier.size(126.dp), contentAlignment = Alignment.Center) {
-        Canvas(Modifier.fillMaxSize()) {
-            val stroke = 11.dp.toPx()
-            drawArc(Color.White.copy(alpha = 0.64f), -90f, 360f, false, Offset(stroke / 2, stroke / 2), Size(size.width - stroke, size.height - stroke), style = Stroke(stroke, cap = StrokeCap.Round))
-            drawArc(Color(0xFF8FB9D8), -90f, 360f * (percent.coerceAtMost(100) / 100f), false, Offset(stroke / 2, stroke / 2), Size(size.width - stroke, size.height - stroke), style = Stroke(stroke, cap = StrokeCap.Round))
-        }
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text("$percent%", fontSize = 26.sp, fontWeight = FontWeight.Light)
-            Text("${minutes}分钟", fontSize = 12.sp, color = Color(0xFF63717C))
+private fun ProgressRing(hazeState: HazeState, percent: Int, minutes: Int) {
+    LiquidGlassSurface(
+        hazeState,
+        modifier = Modifier.size(136.dp),
+        shape = CircleShape,
+        padding = PaddingValues(10.dp),
+        strong = true,
+    ) {
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Canvas(Modifier.fillMaxSize()) {
+                val stroke = 10.dp.toPx()
+                drawArc(Color.White.copy(alpha = 0.82f), -90f, 360f, false, Offset(stroke / 2, stroke / 2), Size(size.width - stroke, size.height - stroke), style = Stroke(stroke, cap = StrokeCap.Round))
+                drawArc(Color(0xFF78ACD2), -90f, 360f * (percent.coerceAtMost(100) / 100f), false, Offset(stroke / 2, stroke / 2), Size(size.width - stroke, size.height - stroke), style = Stroke(stroke, cap = StrokeCap.Round))
+            }
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text("$percent%", fontSize = 26.sp, fontWeight = FontWeight.Light)
+                Text("${minutes}分钟", fontSize = 12.sp, color = Color(0xFF63717C))
+            }
         }
     }
 }
@@ -204,6 +221,47 @@ fun Cover(book: BookEntity, modifier: Modifier = Modifier) {
             AsyncImage(File(book.coverPath), contentDescription = book.title, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
         } else {
             Icon(Icons.Outlined.AutoStories, contentDescription = null, tint = Color(0xFF86A6BF), modifier = Modifier.size(40.dp))
+        }
+        BookProgressBadge(book.progress, Modifier.align(Alignment.TopStart).padding(8.dp))
+    }
+}
+
+@Composable
+private fun BookProgressBadge(progress: Double, modifier: Modifier = Modifier) {
+    val fraction = progress.toFloat().coerceIn(0f, 1f)
+    LiquidGlassSurface(
+        hazeState = null,
+        modifier = modifier.size(32.dp),
+        shape = CircleShape,
+        padding = PaddingValues(4.dp),
+        strong = true,
+    ) {
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Canvas(Modifier.fillMaxSize()) {
+                val stroke = 2.5.dp.toPx()
+                if (fraction <= 0f) drawCircle(Color(0x55909AA3), radius = size.minDimension * 0.28f)
+                drawArc(
+                    color = Color(0x66909AA3),
+                    startAngle = -90f,
+                    sweepAngle = 360f,
+                    useCenter = false,
+                    topLeft = Offset(stroke / 2, stroke / 2),
+                    size = Size(size.width - stroke, size.height - stroke),
+                    style = Stroke(stroke, cap = StrokeCap.Round),
+                )
+                if (fraction in 0.001f..0.994f) {
+                    drawArc(
+                        color = Color(0xFF4F8BB6),
+                        startAngle = -90f,
+                        sweepAngle = 360f * fraction,
+                        useCenter = false,
+                        topLeft = Offset(stroke / 2, stroke / 2),
+                        size = Size(size.width - stroke, size.height - stroke),
+                        style = Stroke(stroke, cap = StrokeCap.Round),
+                    )
+                }
+            }
+            if (fraction >= 0.995f) Icon(Icons.Outlined.Check, contentDescription = "已读完", tint = Color(0xFF487DA4), modifier = Modifier.size(17.dp))
         }
     }
 }

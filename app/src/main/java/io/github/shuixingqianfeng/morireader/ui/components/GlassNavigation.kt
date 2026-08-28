@@ -126,6 +126,7 @@ fun GlassBottomNavigation(
                     modifier = Modifier.weight(1f).fillMaxHeight(),
                     shape = RoundedCornerShape(36.dp),
                     strong = true,
+                    dark = true,
                 ) {}
                 Spacer(Modifier.width(12.dp))
                 LiquidGlassSurface(
@@ -133,6 +134,7 @@ fun GlassBottomNavigation(
                     modifier = Modifier.size(72.dp),
                     shape = CircleShape,
                     strong = true,
+                    dark = true,
                 ) {}
             }
 
@@ -142,7 +144,8 @@ fun GlassBottomNavigation(
                     .offset { IntOffset((lensX - lensWidthPx / 2).roundToInt(), with(density) { 8.dp.roundToPx() }) }
                     .size(56.dp),
                 shape = CircleShape,
-                strong = false,
+                strong = true,
+                dark = true,
             ) {}
 
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -160,7 +163,7 @@ fun GlassBottomNavigation(
                                 },
                             contentAlignment = Alignment.Center,
                         ) {
-                            NavigationItemContent(tab, selectedTab == tab)
+                            NavigationItemContent(tab, selectedTab == tab, darkGlass = true)
                         }
                     }
                 }
@@ -176,7 +179,7 @@ fun GlassBottomNavigation(
                         },
                     contentAlignment = Alignment.Center,
                 ) {
-                    NavigationItemContent(MainTab.SEARCH, selectedTab == MainTab.SEARCH, showLabel = false)
+                    NavigationItemContent(MainTab.SEARCH, selectedTab == MainTab.SEARCH, showLabel = false, darkGlass = true)
                 }
             }
         }
@@ -184,8 +187,13 @@ fun GlassBottomNavigation(
 }
 
 @Composable
-private fun NavigationItemContent(tab: MainTab, selected: Boolean, showLabel: Boolean = true) {
-    val color by animateColorAsState(if (selected) Color(0xFF356F9D) else Color(0xFF273039), label = "nav-color")
+private fun NavigationItemContent(tab: MainTab, selected: Boolean, showLabel: Boolean = true, darkGlass: Boolean = false) {
+    val color by animateColorAsState(
+        if (darkGlass) {
+            if (selected) Color(0xFF9DD8FF) else Color.White.copy(alpha = 0.92f)
+        } else if (selected) Color(0xFF356F9D) else Color(0xFF273039),
+        label = "nav-color",
+    )
     Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
         Icon(tab.icon, contentDescription = tab.label, tint = color, modifier = Modifier.size(if (showLabel) 24.dp else 30.dp))
         if (showLabel) {

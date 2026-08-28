@@ -3,6 +3,7 @@ package io.github.shuixingqianfeng.morireader.ui
 import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,6 +24,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import dev.chrisbanes.haze.HazeState
@@ -78,6 +81,7 @@ fun MoriReaderApp(viewModel: MainViewModel) {
     // OEM GPU drivers render that layer fully transparent, leaving only
     // overlays such as snackbars visible.
     Box(Modifier.fillMaxSize().background(Color(0xFFF7F8FB))) {
+        GlassAmbientBackdrop()
         val readerBook = books.firstOrNull { it.id == readerBookId }
         if (readerBook != null) {
             ReaderScreen(
@@ -132,6 +136,30 @@ fun MoriReaderApp(viewModel: MainViewModel) {
             onAddTag = { viewModel.addTag(detailBook.id, it) },
             onRemoveTag = { viewModel.removeTag(detailBook.id, it) },
             onDelete = { viewModel.delete(detailBook); detailBookId = null },
+        )
+    }
+}
+
+@Composable
+private fun GlassAmbientBackdrop() {
+    Canvas(Modifier.fillMaxSize()) {
+        drawCircle(
+            brush = Brush.radialGradient(
+                colors = listOf(Color(0x337FC7ED), Color.Transparent),
+                center = Offset(size.width * 0.88f, size.height * 0.12f),
+                radius = size.minDimension * 0.72f,
+            ),
+            radius = size.minDimension * 0.72f,
+            center = Offset(size.width * 0.88f, size.height * 0.12f),
+        )
+        drawCircle(
+            brush = Brush.radialGradient(
+                colors = listOf(Color(0x24C8B8F2), Color.Transparent),
+                center = Offset(size.width * 0.06f, size.height * 0.78f),
+                radius = size.minDimension * 0.62f,
+            ),
+            radius = size.minDimension * 0.62f,
+            center = Offset(size.width * 0.06f, size.height * 0.78f),
         )
     }
 }

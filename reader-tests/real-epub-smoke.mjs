@@ -87,6 +87,8 @@ try {
         horizontalMarginDp: 24,
         theme: 'WHITE',
         mode: 'PAGINATED',
+        swipeEnabled: true,
+        pageTurnEffect: 'SIMULATION',
       },
     }),
   }), `${origin}/books/book.epub`)
@@ -99,6 +101,29 @@ try {
     timedOut = true
   }
   if (!timedOut) await page.waitForTimeout(250)
+  if (!timedOut) {
+    await page.evaluate(() => {
+      const reader = document.querySelector('#reader')
+      globalThis.__rapidMoriSwipe = (start, end) => {
+        const dispatchTouch = (type, x) => {
+          const event = new Event(type, { bubbles: true, cancelable: true })
+          Object.defineProperty(event, 'changedTouches', { value: [{ clientX: x, clientY: 450 }] })
+          reader.dispatchEvent(event)
+        }
+        for (let index = 0; index < 4; index += 1) {
+          dispatchTouch('touchstart', start)
+          dispatchTouch('touchmove', end)
+          dispatchTouch('touchend', end)
+        }
+      }
+      // Reproduce the reported fast-right-swipe failure. Multiple overlapping
+      // gestures must never leave the column viewport between two pages.
+      globalThis.__rapidMoriSwipe(380, 60)
+    })
+    await page.waitForTimeout(450)
+    await page.evaluate(() => globalThis.__rapidMoriSwipe(60, 380))
+    await page.waitForTimeout(450)
+  }
   await page.screenshot({ path: screenshotPath, fullPage: true })
   const state = await page.evaluate(() => {
     const view = document.querySelector('#reader')
@@ -128,6 +153,10 @@ try {
         .filter(image => image.complete && image.naturalWidth > 0).length,
       scrollWidth: view?.scrollWidth ?? 0,
       clientWidth: view?.clientWidth ?? 0,
+      scrollLeft: view?.scrollLeft ?? 0,
+      pageAligned: view
+        ? Math.abs(view.scrollLeft - Math.round(view.scrollLeft / Math.max(1, view.clientWidth)) * view.clientWidth) < 1
+        : false,
     }
   })
   process.stdout.write(`${JSON.stringify({ timedOut, state, diagnostics, screenshotPath }, null, 2)}\n`)
@@ -143,6 +172,7 @@ try {
     timedOut ||
     state.messages.some(message => message.type === 'error') ||
     !hasVisibleContent ||
+    !state.pageAligned ||
     !matchesExpectedSection ||
     !matchesExpectedTitle ||
     !matchesExpectedTextLength

@@ -23,7 +23,7 @@ body {
   color: var(--reader-foreground);
   font-family: system-ui, -apple-system, sans-serif;
   overscroll-behavior: none;
-  touch-action: pan-x pan-y;
+  touch-action: none;
 }
 
 #reader {
@@ -68,9 +68,11 @@ body {
 }
 
 #reader.paginated {
-  overflow-x: auto;
+  overflow-x: hidden;
   overflow-y: hidden;
   scroll-behavior: auto;
+  overscroll-behavior: none;
+  touch-action: none;
 }
 
 #reader.paginated #chapter {
@@ -86,6 +88,21 @@ body {
 #reader.scrolled {
   overflow-x: hidden;
   overflow-y: auto;
+  overscroll-behavior-y: contain;
+  touch-action: pan-y;
+}
+
+#page-turn-shadow {
+  position: fixed;
+  inset: 0;
+  z-index: 8;
+  opacity: 0;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent 58%, rgba(38, 47, 55, 0.06) 76%, rgba(20, 28, 35, 0.22) 100%);
+}
+
+#page-turn-shadow.previous {
+  transform: scaleX(-1);
 }
 
 #reader.scrolled #chapter {

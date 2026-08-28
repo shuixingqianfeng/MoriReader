@@ -14,6 +14,7 @@ private val Context.moriDataStore by preferencesDataStore("reader_preferences")
 
 enum class ReaderTheme { WHITE, SEPIA, GRAY, DARK }
 enum class ReaderMode { PAGED, SCROLLED }
+enum class PageTurnEffect { DIRECT, SIMULATION }
 
 data class ReaderPreferences(
     val dailyGoalMinutes: Int = 30,
@@ -24,6 +25,7 @@ data class ReaderPreferences(
     val theme: ReaderTheme = ReaderTheme.WHITE,
     val mode: ReaderMode = ReaderMode.PAGED,
     val swipeEnabled: Boolean = true,
+    val pageTurnEffect: PageTurnEffect = PageTurnEffect.SIMULATION,
 )
 
 class SettingsRepository(private val context: Context) {
@@ -36,6 +38,7 @@ class SettingsRepository(private val context: Context) {
         val theme = stringPreferencesKey("reader_theme")
         val mode = stringPreferencesKey("reader_mode")
         val swipe = booleanPreferencesKey("swipe_enabled")
+        val pageTurnEffect = stringPreferencesKey("page_turn_effect")
     }
 
     val preferences: Flow<ReaderPreferences> = context.moriDataStore.data.map { values ->
@@ -48,6 +51,9 @@ class SettingsRepository(private val context: Context) {
             theme = values[Keys.theme]?.let { runCatching { ReaderTheme.valueOf(it) }.getOrNull() } ?: ReaderTheme.WHITE,
             mode = values[Keys.mode]?.let { runCatching { ReaderMode.valueOf(it) }.getOrNull() } ?: ReaderMode.PAGED,
             swipeEnabled = values[Keys.swipe] ?: true,
+            pageTurnEffect = values[Keys.pageTurnEffect]
+                ?.let { runCatching { PageTurnEffect.valueOf(it) }.getOrNull() }
+                ?: PageTurnEffect.SIMULATION,
         )
     }
 
@@ -62,6 +68,9 @@ class SettingsRepository(private val context: Context) {
                 theme = values[Keys.theme]?.let { runCatching { ReaderTheme.valueOf(it) }.getOrNull() } ?: ReaderTheme.WHITE,
                 mode = values[Keys.mode]?.let { runCatching { ReaderMode.valueOf(it) }.getOrNull() } ?: ReaderMode.PAGED,
                 swipeEnabled = values[Keys.swipe] ?: true,
+                pageTurnEffect = values[Keys.pageTurnEffect]
+                    ?.let { runCatching { PageTurnEffect.valueOf(it) }.getOrNull() }
+                    ?: PageTurnEffect.SIMULATION,
             )
             val next = transform(current)
             values[Keys.goal] = next.dailyGoalMinutes.coerceIn(1, 1440)
@@ -72,6 +81,7 @@ class SettingsRepository(private val context: Context) {
             values[Keys.theme] = next.theme.name
             values[Keys.mode] = next.mode.name
             values[Keys.swipe] = next.swipeEnabled
+            values[Keys.pageTurnEffect] = next.pageTurnEffect.name
         }
     }
 }

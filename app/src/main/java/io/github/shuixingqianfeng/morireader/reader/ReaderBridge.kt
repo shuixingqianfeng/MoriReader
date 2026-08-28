@@ -81,6 +81,7 @@ private fun ReaderPreferences.toJson() = JSONObject()
     .put("theme", theme.name)
     .put("mode", mode.name)
     .put("swipeEnabled", swipeEnabled)
+    .put("pageTurnEffect", pageTurnEffect.name)
 
 @SuppressLint("SetJavaScriptEnabled")
 @Composable

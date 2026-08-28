@@ -56,6 +56,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import dev.chrisbanes.haze.HazeState
 import io.github.shuixingqianfeng.morireader.data.BookEntity
+import io.github.shuixingqianfeng.morireader.data.PageTurnEffect
 import io.github.shuixingqianfeng.morireader.data.ReaderMode
 import io.github.shuixingqianfeng.morireader.data.ReaderPreferences
 import io.github.shuixingqianfeng.morireader.data.ReaderTheme
@@ -242,6 +243,20 @@ private fun ReaderSettingsSheet(
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 FilterChip(preferences.mode == ReaderMode.PAGED, { onUpdate { it.copy(mode = ReaderMode.PAGED) } }, { Text("分页") })
                 FilterChip(preferences.mode == ReaderMode.SCROLLED, { onUpdate { it.copy(mode = ReaderMode.SCROLLED) } }, { Text("滚动") })
+            }
+            if (preferences.mode == ReaderMode.PAGED) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    FilterChip(
+                        preferences.pageTurnEffect == PageTurnEffect.DIRECT,
+                        { onUpdate { it.copy(pageTurnEffect = PageTurnEffect.DIRECT) } },
+                        { Text("简洁翻页") },
+                    )
+                    FilterChip(
+                        preferences.pageTurnEffect == PageTurnEffect.SIMULATION,
+                        { onUpdate { it.copy(pageTurnEffect = PageTurnEffect.SIMULATION) } },
+                        { Text("仿真翻页") },
+                    )
+                }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.navigationBarsPadding()) {
                 ReaderTheme.entries.forEach { theme ->
