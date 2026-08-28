@@ -1,6 +1,7 @@
 package io.github.shuixingqianfeng.morireader
 
 import android.graphics.Color
+import android.graphics.Bitmap
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelected
@@ -33,17 +34,9 @@ class MoriReaderUiTest {
         composeRule.waitForIdle()
 
         val screenshot = InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot()
-        var darkPixelCount = 0
-        for (y in screenshot.height / 10 until screenshot.height * 9 / 10) {
-            for (x in 0 until screenshot.width) {
-                val pixel = screenshot.getPixel(x, y)
-                if (Color.red(pixel) < 192 && Color.green(pixel) < 192 && Color.blue(pixel) < 192) {
-                    darkPixelCount++
-                }
-            }
-        }
+        val darkPixelCount = countSampledDarkPixels(screenshot)
         screenshot.recycle()
-        if (darkPixelCount < 500) {
+        if (darkPixelCount < 20) {
             fail("App semantics were present but the OEM-compatible shell painted blank; dark pixels=$darkPixelCount")
         }
     }
@@ -61,5 +54,18 @@ class MoriReaderUiTest {
         composeRule.waitForIdle()
         composeRule.onNodeWithTag("tab_SEARCH").assertIsSelected()
         composeRule.onNodeWithText("搜索", useUnmergedTree = true).assertIsDisplayed()
+    }
+
+    private fun countSampledDarkPixels(bitmap: Bitmap): Int {
+        val row = IntArray(bitmap.width)
+        var count = 0
+        for (y in bitmap.height / 10 until bitmap.height * 9 / 10 step 6) {
+            bitmap.getPixels(row, 0, bitmap.width, 0, y, bitmap.width, 1)
+            for (x in row.indices step 6) {
+                val pixel = row[x]
+                if (Color.red(pixel) < 192 && Color.green(pixel) < 192 && Color.blue(pixel) < 192) count++
+            }
+        }
+        return count
     }
 }
