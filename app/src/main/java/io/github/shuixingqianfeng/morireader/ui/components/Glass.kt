@@ -26,31 +26,53 @@ fun LiquidGlassSurface(
     shape: Shape = RoundedCornerShape(28.dp),
     padding: PaddingValues = PaddingValues(0.dp),
     strong: Boolean = false,
-    dark: Boolean = false,
     content: @Composable BoxScope.() -> Unit,
 ) {
     // This deterministic glass stack avoids the RenderEffect transparency bug
     // seen on some Android 12/13 OEM GPUs while preserving a liquid, layered
     // refraction language through directional highlights and double borders.
-    val fill = when {
-        dark && strong -> listOf(Color(0xF03F454C), Color(0xF02A3036), Color(0xF0363C43))
-        dark -> listOf(Color(0xEA4A5057), Color(0xEA30363C), Color(0xEA3C4249))
-        strong -> listOf(Color(0xF9FCFEFF), Color(0xF3E9F4FC), Color(0xF8F8FCFF))
-        else -> listOf(Color(0xF5FCFEFF), Color(0xEDECF6FC), Color(0xF4F8FCFF))
-    }
-    val outerBorder = if (dark) {
-        Brush.linearGradient(listOf(Color.White.copy(alpha = 0.64f), Color(0xFF94ABC0).copy(alpha = 0.22f), Color.Black.copy(alpha = 0.36f)))
+    // Glass has no fixed colour of its own. The translucent white body lets the
+    // ambient blue/purple background show through; the edges provide the
+    // brighter refracted rim seen in real clear glass.
+    val fill = if (strong) {
+        listOf(
+            Color.White.copy(alpha = 0.62f),
+            Color(0xFFD9F1FF).copy(alpha = 0.34f),
+            Color.White.copy(alpha = 0.48f),
+        )
     } else {
-        Brush.linearGradient(listOf(Color.White, Color.White.copy(alpha = 0.62f), Color(0xFF9BB9D0).copy(alpha = 0.38f)))
+        listOf(
+            Color.White.copy(alpha = 0.48f),
+            Color(0xFFD8F0FF).copy(alpha = 0.24f),
+            Color.White.copy(alpha = 0.38f),
+        )
     }
-    val highlight = if (dark) {
-        Brush.linearGradient(listOf(Color.White.copy(alpha = 0.24f), Color.Transparent, Color.White.copy(alpha = 0.07f)))
-    } else {
-        Brush.linearGradient(listOf(Color.White.copy(alpha = 0.74f), Color.Transparent, Color(0xFF9ED3F2).copy(alpha = 0.12f)))
-    }
-    val innerBorder = if (dark) Color.White.copy(alpha = 0.13f) else Color.White.copy(alpha = 0.72f)
-    val ambient = if (dark) Color(0x55212B34) else Color(0x24557A9E)
-    val spot = if (dark) Color(0x66303A44) else Color(0x30506E8A)
+    val outerBorder = Brush.linearGradient(
+        listOf(
+            Color.White.copy(alpha = 0.98f),
+            Color.White.copy(alpha = 0.52f),
+            Color(0xFF8CB7D4).copy(alpha = 0.34f),
+            Color.White.copy(alpha = 0.80f),
+        ),
+    )
+    val topRefraction = Brush.linearGradient(
+        listOf(
+            Color.White.copy(alpha = if (strong) 0.72f else 0.58f),
+            Color.Transparent,
+            Color(0xFF90D2F4).copy(alpha = 0.10f),
+        ),
+    )
+    val lowerRefraction = Brush.verticalGradient(
+        listOf(
+            Color.Transparent,
+            Color.Transparent,
+            Color(0xFF86BADA).copy(alpha = 0.08f),
+            Color.White.copy(alpha = 0.22f),
+        ),
+    )
+    val innerBorder = Color.White.copy(alpha = if (strong) 0.58f else 0.45f)
+    val ambient = Color(0x20557A9E)
+    val spot = Color(0x2B506E8A)
 
     Box(
         modifier = modifier
@@ -59,7 +81,8 @@ fun LiquidGlassSurface(
             .background(Brush.linearGradient(fill))
             .border(BorderStroke(1.dp, outerBorder), shape),
     ) {
-        Box(Modifier.matchParentSize().background(highlight))
+        Box(Modifier.matchParentSize().background(topRefraction))
+        Box(Modifier.matchParentSize().background(lowerRefraction))
         Box(
             Modifier
                 .matchParentSize()

@@ -219,7 +219,7 @@ fun SettingsScreen(
             }
         }
         item {
-            Text("MoriReader 0.1.3", color = Color(0xFF76818B), modifier = Modifier.padding(8.dp))
+            Text("MoriReader 0.1.4", color = Color(0xFF76818B), modifier = Modifier.padding(8.dp))
         }
     }
 }

@@ -2,6 +2,7 @@ package io.github.shuixingqianfeng.morireader.ui.screens
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -39,6 +40,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
@@ -229,39 +231,60 @@ fun Cover(book: BookEntity, modifier: Modifier = Modifier) {
 @Composable
 private fun BookProgressBadge(progress: Double, modifier: Modifier = Modifier) {
     val fraction = progress.toFloat().coerceIn(0f, 1f)
-    LiquidGlassSurface(
-        hazeState = null,
-        modifier = modifier.size(32.dp),
-        shape = CircleShape,
-        padding = PaddingValues(4.dp),
-        strong = true,
+    Box(
+        modifier = modifier
+            .size(20.dp)
+            .shadow(
+                elevation = 3.dp,
+                shape = CircleShape,
+                ambientColor = Color(0x24506F88),
+                spotColor = Color(0x30506F88),
+            )
+            .clip(CircleShape)
+            .background(
+                Brush.linearGradient(
+                    listOf(
+                        Color.White.copy(alpha = 0.82f),
+                        Color(0xFFD9F1FF).copy(alpha = 0.52f),
+                        Color.White.copy(alpha = 0.66f),
+                    ),
+                ),
+            )
+            .border(
+                width = 0.7.dp,
+                brush = Brush.linearGradient(
+                    listOf(Color.White, Color.White.copy(alpha = 0.54f), Color(0xFF83AFCB).copy(alpha = 0.45f)),
+                ),
+                shape = CircleShape,
+            )
+            .padding(3.dp),
+        contentAlignment = Alignment.Center,
     ) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Canvas(Modifier.fillMaxSize()) {
-                val stroke = 2.5.dp.toPx()
-                if (fraction <= 0f) drawCircle(Color(0x55909AA3), radius = size.minDimension * 0.28f)
+        Canvas(Modifier.fillMaxSize()) {
+            val stroke = 1.5.dp.toPx()
+            drawArc(
+                color = Color(0x6B7E919F),
+                startAngle = -90f,
+                sweepAngle = 360f,
+                useCenter = false,
+                topLeft = Offset(stroke / 2, stroke / 2),
+                size = Size(size.width - stroke, size.height - stroke),
+                style = Stroke(stroke, cap = StrokeCap.Round),
+            )
+            if (fraction in 0.001f..0.994f) {
                 drawArc(
-                    color = Color(0x66909AA3),
+                    color = Color(0xFF4B8DB8),
                     startAngle = -90f,
-                    sweepAngle = 360f,
+                    sweepAngle = 360f * fraction,
                     useCenter = false,
                     topLeft = Offset(stroke / 2, stroke / 2),
                     size = Size(size.width - stroke, size.height - stroke),
                     style = Stroke(stroke, cap = StrokeCap.Round),
                 )
-                if (fraction in 0.001f..0.994f) {
-                    drawArc(
-                        color = Color(0xFF4F8BB6),
-                        startAngle = -90f,
-                        sweepAngle = 360f * fraction,
-                        useCenter = false,
-                        topLeft = Offset(stroke / 2, stroke / 2),
-                        size = Size(size.width - stroke, size.height - stroke),
-                        style = Stroke(stroke, cap = StrokeCap.Round),
-                    )
-                }
             }
-            if (fraction >= 0.995f) Icon(Icons.Outlined.Check, contentDescription = "已读完", tint = Color(0xFF487DA4), modifier = Modifier.size(17.dp))
+        }
+        if (fraction >= 0.995f) {
+            Icon(Icons.Outlined.Check, contentDescription = "已读完", tint = Color(0xFF397DA9), modifier = Modifier.size(10.dp))
         }
     }
 }

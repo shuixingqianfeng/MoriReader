@@ -126,7 +126,6 @@ fun GlassBottomNavigation(
                     modifier = Modifier.weight(1f).fillMaxHeight(),
                     shape = RoundedCornerShape(36.dp),
                     strong = true,
-                    dark = true,
                 ) {}
                 Spacer(Modifier.width(12.dp))
                 LiquidGlassSurface(
@@ -134,7 +133,6 @@ fun GlassBottomNavigation(
                     modifier = Modifier.size(72.dp),
                     shape = CircleShape,
                     strong = true,
-                    dark = true,
                 ) {}
             }
 
@@ -145,7 +143,6 @@ fun GlassBottomNavigation(
                     .size(56.dp),
                 shape = CircleShape,
                 strong = true,
-                dark = true,
             ) {}
 
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -163,7 +160,7 @@ fun GlassBottomNavigation(
                                 },
                             contentAlignment = Alignment.Center,
                         ) {
-                            NavigationItemContent(tab, selectedTab == tab, darkGlass = true)
+                            NavigationItemContent(tab, selectedTab == tab)
                         }
                     }
                 }
@@ -179,7 +176,7 @@ fun GlassBottomNavigation(
                         },
                     contentAlignment = Alignment.Center,
                 ) {
-                    NavigationItemContent(MainTab.SEARCH, selectedTab == MainTab.SEARCH, showLabel = false, darkGlass = true)
+                    NavigationItemContent(MainTab.SEARCH, selectedTab == MainTab.SEARCH, showLabel = false)
                 }
             }
         }
@@ -187,11 +184,9 @@ fun GlassBottomNavigation(
 }
 
 @Composable
-private fun NavigationItemContent(tab: MainTab, selected: Boolean, showLabel: Boolean = true, darkGlass: Boolean = false) {
+private fun NavigationItemContent(tab: MainTab, selected: Boolean, showLabel: Boolean = true) {
     val color by animateColorAsState(
-        if (darkGlass) {
-            if (selected) Color(0xFF9DD8FF) else Color.White.copy(alpha = 0.92f)
-        } else if (selected) Color(0xFF356F9D) else Color(0xFF273039),
+        if (selected) Color(0xFF397DA9) else Color(0xFF273039),
         label = "nav-color",
     )
     Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
