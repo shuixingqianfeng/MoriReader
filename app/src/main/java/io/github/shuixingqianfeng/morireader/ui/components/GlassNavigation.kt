@@ -102,18 +102,16 @@ fun GlassBottomNavigation(
                         val down = awaitFirstDown(requireUnconsumed = false)
                         var targetIndex = nearest(down.position.x)
                         dragX = down.position.x.coerceIn(lensWidthPx / 2, totalWidthPx - lensWidthPx / 2)
-                        onSelected(tabs[targetIndex])
                         while (true) {
                             val event = awaitPointerEvent()
                             val change = event.changes.firstOrNull { it.id == down.id } ?: break
-                            if (!change.pressed) break
+                            if (!change.pressed) {
+                                onSelected(tabs[targetIndex])
+                                break
+                            }
                             val x = change.position.x.coerceIn(lensWidthPx / 2, totalWidthPx - lensWidthPx / 2)
                             dragX = x
-                            val next = nearest(x)
-                            if (next != targetIndex) {
-                                targetIndex = next
-                                onSelected(tabs[targetIndex])
-                            }
+                            targetIndex = nearest(x)
                             change.consume()
                         }
                         dragX = Float.NaN
@@ -145,9 +143,11 @@ fun GlassBottomNavigation(
                 strong = true,
             ) {}
 
+            val highlightedIndex = if (dragX.isNaN()) selectedIndex else nearest(dragX)
+
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Row(Modifier.weight(1f).fillMaxHeight()) {
-                    tabs.take(4).forEach { tab ->
+                    tabs.take(4).forEachIndexed { index, tab ->
                         Box(
                             Modifier
                                 .weight(1f)
@@ -160,7 +160,7 @@ fun GlassBottomNavigation(
                                 },
                             contentAlignment = Alignment.Center,
                         ) {
-                            NavigationItemContent(tab, selectedTab == tab)
+                            NavigationItemContent(tab, highlightedIndex == index)
                         }
                     }
                 }
@@ -176,7 +176,7 @@ fun GlassBottomNavigation(
                         },
                     contentAlignment = Alignment.Center,
                 ) {
-                    NavigationItemContent(MainTab.SEARCH, selectedTab == MainTab.SEARCH, showLabel = false)
+                    NavigationItemContent(MainTab.SEARCH, highlightedIndex == 4, showLabel = false)
                 }
             }
         }

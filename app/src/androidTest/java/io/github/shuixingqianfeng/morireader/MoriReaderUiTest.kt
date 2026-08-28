@@ -48,7 +48,7 @@ class MoriReaderUiTest {
             swipe(
                 start = Offset(width * 0.10f, height * 0.5f),
                 end = Offset(width * 0.94f, height * 0.5f),
-                durationMillis = 450,
+                durationMillis = 220,
             )
         }
         composeRule.waitForIdle()
