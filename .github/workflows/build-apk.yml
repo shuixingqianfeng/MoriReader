@@ -129,8 +129,9 @@ jobs:
             ./gradlew assembleDebug --stacktrace
             adb install -r app/build/outputs/apk/debug/app-debug.apk
             adb shell am force-stop io.github.shuixingqianfeng.morireader
-            adb shell am start -W -n io.github.shuixingqianfeng.morireader/.MainActivity
+            adb shell am start -n io.github.shuixingqianfeng.morireader/.MainActivity
             sleep 2
+            adb shell dumpsys activity activities | grep -q 'mResumedActivity.*io.github.shuixingqianfeng.morireader'
             adb exec-out screencap -p > app-shell.png
             python3 ci/check_screenshot.py app-shell.png
 
