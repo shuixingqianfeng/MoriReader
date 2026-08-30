@@ -1,6 +1,7 @@
 package io.github.shuixingqianfeng.morireader.ui
 
 import android.content.Intent
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Canvas
@@ -29,6 +30,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import dev.chrisbanes.haze.HazeState
+import io.github.shuixingqianfeng.morireader.BuildConfig
 import io.github.shuixingqianfeng.morireader.MainViewModel
 import io.github.shuixingqianfeng.morireader.UiMessage
 import io.github.shuixingqianfeng.morireader.ui.components.GlassBottomNavigation
@@ -54,6 +56,10 @@ fun MoriReaderApp(viewModel: MainViewModel) {
     var selectedTab by rememberSaveable { mutableStateOf(MainTab.LIBRARY) }
     var detailBookId by rememberSaveable { mutableStateOf<String?>(null) }
     var readerBookId by rememberSaveable { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(selectedTab) {
+        if (BuildConfig.DEBUG) Log.i("MoriReaderNavigation", "selected=${selectedTab.name}")
+    }
 
     val importLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         if (uri != null) {

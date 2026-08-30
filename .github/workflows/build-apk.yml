@@ -93,5 +93,5 @@ jobs:
             app/build/reports/androidTests/connected/**
             app/build/outputs/androidTest-results/connected/**
             app-shell.png
-            navigation-after.xml
+            navigation-after.log
           if-no-files-found: warn
