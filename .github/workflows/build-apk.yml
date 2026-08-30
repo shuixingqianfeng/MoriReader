@@ -80,6 +80,7 @@ jobs:
             sleep 2
             adb exec-out screencap -p > app-shell.png
             python3 ci/check_screenshot.py app-shell.png
+            python3 ci/verify_navigation.py
 
       - name: Upload instrumentation reports
         if: always()
@@ -90,4 +91,5 @@ jobs:
             app/build/reports/androidTests/connected/**
             app/build/outputs/androidTest-results/connected/**
             app-shell.png
+            navigation-after.xml
           if-no-files-found: warn
