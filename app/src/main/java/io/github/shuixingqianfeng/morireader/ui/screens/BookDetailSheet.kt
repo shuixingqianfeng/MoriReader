@@ -65,7 +65,7 @@ fun BookDetailSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         containerColor = Color.Transparent,
-        scrimColor = Color(0x5C17202A),
+        scrimColor = Color(0x7317202A),
         dragHandle = null,
         shape = RoundedCornerShape(topStart = 34.dp, topEnd = 34.dp),
     ) {
@@ -75,6 +75,7 @@ fun BookDetailSheet(
             shape = RoundedCornerShape(topStart = 34.dp, topEnd = 34.dp),
             padding = PaddingValues(horizontal = 24.dp, vertical = 16.dp),
             strong = true,
+            readable = true,
         ) {
             LazyColumn(verticalArrangement = Arrangement.spacedBy(18.dp), contentPadding = PaddingValues(bottom = 28.dp)) {
                 item {
@@ -88,9 +89,9 @@ fun BookDetailSheet(
                         Spacer(Modifier.width(22.dp))
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             Text(book.title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.ExtraBold, maxLines = 3, overflow = TextOverflow.Ellipsis)
-                            Text(book.author, color = Color(0xFF67737D))
-                            Text(statusText(book.status), color = Color(0xFF4B7FA8), fontWeight = FontWeight.SemiBold)
-                            Text("已读 ${(book.progress * 100).toInt()}% · ${formatDuration(book.totalReadingTimeMs)}", style = MaterialTheme.typography.bodySmall, color = Color(0xFF74808A))
+                            Text(book.author, color = Color(0xFF46535E))
+                            Text(statusText(book.status), color = Color(0xFF28668F), fontWeight = FontWeight.Bold)
+                            Text("已读 ${(book.progress * 100).toInt()}% · ${formatDuration(book.totalReadingTimeMs)}", style = MaterialTheme.typography.bodySmall, color = Color(0xFF53616C))
                         }
                     }
                 }
@@ -100,11 +101,11 @@ fun BookDetailSheet(
                     }
                 }
                 item {
-                    LiquidGlassSurface(hazeState, modifier = Modifier.fillMaxWidth(), padding = PaddingValues(18.dp)) {
+                    LiquidGlassSurface(hazeState, modifier = Modifier.fillMaxWidth(), padding = PaddingValues(18.dp), strong = true) {
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             Text("阅读进度", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                            Text(book.currentChapterTitle.ifBlank { "尚未开始" }, color = Color(0xFF67737D))
-                            Text("EPUB · ${book.readingDirection.uppercase()}", style = MaterialTheme.typography.bodySmall, color = Color(0xFF7E8891))
+                            Text(book.currentChapterTitle.ifBlank { "尚未开始" }, color = Color(0xFF46535E))
+                            Text("EPUB · ${book.readingDirection.uppercase()}", style = MaterialTheme.typography.bodySmall, color = Color(0xFF53616C))
                         }
                     }
                 }
@@ -127,7 +128,7 @@ fun BookDetailSheet(
                 item {
                     Text("书籍简介", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                     Spacer(Modifier.height(8.dp))
-                    Text(book.description.ifBlank { "这本 EPUB 没有提供简介。" }, color = Color(0xFF3E4850), lineHeight = MaterialTheme.typography.bodyLarge.lineHeight * 1.18)
+                    Text(book.description.ifBlank { "这本 EPUB 没有提供简介。" }, color = Color(0xFF26323B), lineHeight = MaterialTheme.typography.bodyLarge.lineHeight * 1.28)
                 }
                 item {
                     TextButton(onClick = { confirmDelete = true }, modifier = Modifier.fillMaxWidth()) {

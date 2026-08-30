@@ -26,6 +26,7 @@ fun LiquidGlassSurface(
     shape: Shape = RoundedCornerShape(28.dp),
     padding: PaddingValues = PaddingValues(0.dp),
     strong: Boolean = false,
+    readable: Boolean = false,
     content: @Composable BoxScope.() -> Unit,
 ) {
     // This deterministic glass stack avoids the RenderEffect transparency bug
@@ -34,7 +35,16 @@ fun LiquidGlassSurface(
     // Glass has no fixed colour of its own. The translucent white body lets the
     // ambient blue/purple background show through; the edges provide the
     // brighter refracted rim seen in real clear glass.
-    val fill = if (strong) {
+    val fill = if (readable) {
+        // Text-heavy glass must bend the background into colour, not preserve
+        // recognizable shapes behind the copy. This remains translucent while
+        // giving body text a stable, high-contrast reading plane.
+        listOf(
+            Color.White.copy(alpha = 0.96f),
+            Color(0xFFEAF6FC).copy(alpha = 0.93f),
+            Color(0xFFF9FCFE).copy(alpha = 0.95f),
+        )
+    } else if (strong) {
         listOf(
             Color.White.copy(alpha = 0.62f),
             Color(0xFFD9F1FF).copy(alpha = 0.34f),
@@ -57,7 +67,7 @@ fun LiquidGlassSurface(
     )
     val topRefraction = Brush.linearGradient(
         listOf(
-            Color.White.copy(alpha = if (strong) 0.72f else 0.58f),
+            Color.White.copy(alpha = if (readable) 0.82f else if (strong) 0.72f else 0.58f),
             Color.Transparent,
             Color(0xFF90D2F4).copy(alpha = 0.10f),
         ),
@@ -70,13 +80,13 @@ fun LiquidGlassSurface(
             Color.White.copy(alpha = 0.22f),
         ),
     )
-    val innerBorder = Color.White.copy(alpha = if (strong) 0.58f else 0.45f)
+    val innerBorder = Color.White.copy(alpha = if (readable) 0.72f else if (strong) 0.58f else 0.45f)
     val ambient = Color(0x20557A9E)
     val spot = Color(0x2B506E8A)
 
     Box(
         modifier = modifier
-            .shadow(if (strong) 24.dp else 17.dp, shape, ambientColor = ambient, spotColor = spot)
+            .shadow(if (readable || strong) 24.dp else 17.dp, shape, ambientColor = ambient, spotColor = spot)
             .clip(shape)
             .background(Brush.linearGradient(fill))
             .border(BorderStroke(1.dp, outerBorder), shape),
