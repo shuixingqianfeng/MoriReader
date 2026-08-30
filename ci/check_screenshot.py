@@ -67,6 +67,7 @@ def main() -> int:
     width, height, channels, pixels = decode_png(sys.argv[1])
     stride = width * channels
     dark = 0
+    bright = 0
     sampled = 0
     for y in range(height // 10, height * 9 // 10, 6):
         for x in range(0, width, 6):
@@ -75,8 +76,10 @@ def main() -> int:
             sampled += 1
             if red < 192 and green < 192 and blue < 192:
                 dark += 1
-    print(f"screenshot={width}x{height} sampled={sampled} dark={dark}")
-    if dark < 40:
+            if red > 64 or green > 64 or blue > 64:
+                bright += 1
+    print(f"screenshot={width}x{height} sampled={sampled} dark={dark} bright={bright}")
+    if dark < 40 or bright < 40:
         print("App shell appears blank", file=sys.stderr)
         return 1
     return 0
