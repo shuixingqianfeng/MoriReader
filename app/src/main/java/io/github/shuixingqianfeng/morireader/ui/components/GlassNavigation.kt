@@ -105,13 +105,13 @@ fun GlassBottomNavigation(
                         while (true) {
                             val event = awaitPointerEvent()
                             val change = event.changes.firstOrNull { it.id == down.id } ?: break
+                            val x = change.position.x.coerceIn(lensWidthPx / 2, totalWidthPx - lensWidthPx / 2)
+                            dragX = x
+                            targetIndex = nearest(x)
                             if (!change.pressed) {
                                 onSelected(tabs[targetIndex])
                                 break
                             }
-                            val x = change.position.x.coerceIn(lensWidthPx / 2, totalWidthPx - lensWidthPx / 2)
-                            dragX = x
-                            targetIndex = nearest(x)
                             change.consume()
                         }
                         dragX = Float.NaN
