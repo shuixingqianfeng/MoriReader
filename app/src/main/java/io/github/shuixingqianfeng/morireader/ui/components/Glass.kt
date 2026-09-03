@@ -46,22 +46,22 @@ fun LiquidGlassSurface(
         )
     } else if (strong) {
         listOf(
-            Color.White.copy(alpha = 0.62f),
-            Color(0xFFD9F1FF).copy(alpha = 0.34f),
-            Color.White.copy(alpha = 0.48f),
+            Color.White.copy(alpha = 0.66f),
+            Color(0xFFE3F7F7).copy(alpha = 0.35f),
+            Color.White.copy(alpha = 0.52f),
         )
     } else {
         listOf(
-            Color.White.copy(alpha = 0.48f),
-            Color(0xFFD8F0FF).copy(alpha = 0.24f),
-            Color.White.copy(alpha = 0.38f),
+            Color.White.copy(alpha = 0.52f),
+            Color(0xFFE1F4F5).copy(alpha = 0.24f),
+            Color.White.copy(alpha = 0.42f),
         )
     }
     val outerBorder = Brush.linearGradient(
         listOf(
             Color.White.copy(alpha = 0.98f),
             Color.White.copy(alpha = 0.52f),
-            Color(0xFF8CB7D4).copy(alpha = 0.34f),
+            Color(0xFF77BFC5).copy(alpha = 0.34f),
             Color.White.copy(alpha = 0.80f),
         ),
     )
@@ -69,20 +69,28 @@ fun LiquidGlassSurface(
         listOf(
             Color.White.copy(alpha = if (readable) 0.82f else if (strong) 0.72f else 0.58f),
             Color.Transparent,
-            Color(0xFF90D2F4).copy(alpha = 0.10f),
+            Color(0xFF70D3D5).copy(alpha = 0.11f),
         ),
     )
     val lowerRefraction = Brush.verticalGradient(
         listOf(
             Color.Transparent,
             Color.Transparent,
-            Color(0xFF86BADA).copy(alpha = 0.08f),
+            Color(0xFF549DA6).copy(alpha = 0.09f),
             Color.White.copy(alpha = 0.22f),
         ),
     )
     val innerBorder = Color.White.copy(alpha = if (readable) 0.72f else if (strong) 0.58f else 0.45f)
-    val ambient = Color(0x20557A9E)
-    val spot = Color(0x2B506E8A)
+    val sideRefraction = Brush.horizontalGradient(
+        listOf(
+            Color(0xFF6CD4D7).copy(alpha = if (readable) 0.03f else 0.10f),
+            Color.Transparent,
+            Color.Transparent,
+            Color.White.copy(alpha = if (strong) 0.20f else 0.13f),
+        ),
+    )
+    val ambient = Color(0x20517883)
+    val spot = Color(0x2B496E77)
 
     Box(
         modifier = modifier
@@ -93,6 +101,7 @@ fun LiquidGlassSurface(
     ) {
         Box(Modifier.matchParentSize().background(topRefraction))
         Box(Modifier.matchParentSize().background(lowerRefraction))
+        Box(Modifier.matchParentSize().background(sideRefraction))
         Box(
             Modifier
                 .matchParentSize()

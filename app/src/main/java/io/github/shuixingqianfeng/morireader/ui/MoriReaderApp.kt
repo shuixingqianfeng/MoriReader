@@ -122,7 +122,7 @@ fun MoriReaderApp(viewModel: MainViewModel) {
                     hazeState = hazeState,
                     selectedTab = selectedTab,
                     onSelected = { selectedTab = it },
-                    modifier = Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(horizontal = 18.dp, vertical = 10.dp).height(76.dp),
+                    modifier = Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(horizontal = 16.dp, vertical = 10.dp).height(70.dp),
                 )
             }
         }
@@ -151,7 +151,7 @@ private fun GlassAmbientBackdrop() {
     Canvas(Modifier.fillMaxSize()) {
         drawCircle(
             brush = Brush.radialGradient(
-                colors = listOf(Color(0x337FC7ED), Color.Transparent),
+                colors = listOf(Color(0x2E79D7D2), Color.Transparent),
                 center = Offset(size.width * 0.88f, size.height * 0.12f),
                 radius = size.minDimension * 0.72f,
             ),
@@ -160,7 +160,7 @@ private fun GlassAmbientBackdrop() {
         )
         drawCircle(
             brush = Brush.radialGradient(
-                colors = listOf(Color(0x24C8B8F2), Color.Transparent),
+                colors = listOf(Color(0x1F83C8D0), Color.Transparent),
                 center = Offset(size.width * 0.06f, size.height * 0.78f),
                 radius = size.minDimension * 0.62f,
             ),

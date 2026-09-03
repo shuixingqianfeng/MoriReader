@@ -136,7 +136,7 @@ private fun TodayProgressCard(
     LiquidGlassSurface(
         hazeState,
         modifier = Modifier.fillMaxWidth(),
-        padding = PaddingValues(24.dp),
+        padding = PaddingValues(22.dp),
         strong = true,
     ) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -160,20 +160,20 @@ private fun TodayProgressCard(
 private fun ProgressRing(hazeState: HazeState, percent: Int, minutes: Int) {
     LiquidGlassSurface(
         hazeState,
-        modifier = Modifier.size(136.dp),
+        modifier = Modifier.size(112.dp),
         shape = CircleShape,
-        padding = PaddingValues(10.dp),
+        padding = PaddingValues(8.dp),
         strong = true,
     ) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Canvas(Modifier.fillMaxSize()) {
-                val stroke = 10.dp.toPx()
+                val stroke = 7.dp.toPx()
                 drawArc(Color.White.copy(alpha = 0.82f), -90f, 360f, false, Offset(stroke / 2, stroke / 2), Size(size.width - stroke, size.height - stroke), style = Stroke(stroke, cap = StrokeCap.Round))
                 drawArc(Color(0xFF78ACD2), -90f, 360f * (percent.coerceAtMost(100) / 100f), false, Offset(stroke / 2, stroke / 2), Size(size.width - stroke, size.height - stroke), style = Stroke(stroke, cap = StrokeCap.Round))
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("$percent%", fontSize = 26.sp, fontWeight = FontWeight.Light)
-                Text("${minutes}分钟", fontSize = 12.sp, color = Color(0xFF63717C))
+                Text("$percent%", fontSize = 22.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF263D4A))
+                Text("${minutes}分钟", fontSize = 11.sp, color = Color(0xFF586A76))
             }
         }
     }

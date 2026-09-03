@@ -80,6 +80,7 @@ jobs:
             adb shell am force-stop io.github.shuixingqianfeng.morireader
             adb shell am start -W -n io.github.shuixingqianfeng.morireader/.MainActivity
             python3 ci/verify_navigation.py
+            adb exec-out screencap -p > morireader-navigation.png
 
       - name: Upload instrumentation reports
         if: always()
@@ -90,4 +91,5 @@ jobs:
             app/build/reports/androidTests/connected/**
             app/build/outputs/androidTest-results/connected/**
             navigation-after.log
+            morireader-navigation.png
           if-no-files-found: warn

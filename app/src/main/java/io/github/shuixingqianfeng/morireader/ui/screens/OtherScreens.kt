@@ -45,6 +45,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.chrisbanes.haze.HazeState
+import io.github.shuixingqianfeng.morireader.BuildConfig
 import io.github.shuixingqianfeng.morireader.data.BookEntity
 import io.github.shuixingqianfeng.morireader.data.DailyReading
 import io.github.shuixingqianfeng.morireader.data.PageTurnEffect
@@ -219,7 +220,7 @@ fun SettingsScreen(
             }
         }
         item {
-            Text("MoriReader 0.1.4", color = Color(0xFF76818B), modifier = Modifier.padding(8.dp))
+            Text("MoriReader ${BuildConfig.VERSION_NAME}", color = Color(0xFF76818B), modifier = Modifier.padding(8.dp))
         }
     }
 }

@@ -33,7 +33,7 @@ def main() -> int:
     with open("navigation-after.log", "w", encoding="utf-8") as output:
         output.write(navigation_log)
     if "selected=SEARCH" not in navigation_log:
-        raise AssertionError("drag ended at the Search orb but the Search screen did not open")
+        raise AssertionError("drag ended at the Search entry but the Search screen did not open")
     print(f"navigation drag=({start_x},{start_y})->({end_x},{end_y}) search screen visible")
     return 0
 

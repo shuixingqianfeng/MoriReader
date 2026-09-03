@@ -5,8 +5,8 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
-val MoriBlue = Color(0xFF4B7FA8)
-val MoriBlueSoft = Color(0xFFDCEBFA)
+val MoriBlue = Color(0xFF168B91)
+val MoriBlueSoft = Color(0xFFDDF3F2)
 val MoriBackground = Color(0xFFF7F8FB)
 val MoriText = Color(0xFF17202A)
 val MoriMuted = Color(0xFF6F7882)
