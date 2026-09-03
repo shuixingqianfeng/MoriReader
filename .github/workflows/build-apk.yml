@@ -76,7 +76,6 @@ jobs:
           disable-animations: true
           script: |
             ./gradlew connectedDebugAndroidTest --stacktrace
-            adb exec-out run-as io.github.shuixingqianfeng.morireader cat files/liquid-navigation.png > liquid-navigation.png
             adb install -r app/build/outputs/apk/debug/app-debug.apk
             adb shell pm clear io.github.shuixingqianfeng.morireader
             adb shell am force-stop io.github.shuixingqianfeng.morireader
@@ -95,5 +94,4 @@ jobs:
             morireader-window.xml
             morireader-navigation-before.png
             morireader-navigation-after.png
-            liquid-navigation.png
           if-no-files-found: warn
