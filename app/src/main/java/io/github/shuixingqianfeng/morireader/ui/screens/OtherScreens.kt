@@ -220,7 +220,7 @@ fun SettingsScreen(
             }
         }
         item {
-            Text("MoriReader ${BuildConfig.VERSION_NAME}", color = Color(0xFF76818B), modifier = Modifier.padding(8.dp))
+            Text("轻阅 ${BuildConfig.VERSION_NAME}", color = Color(0xFF76818B), modifier = Modifier.padding(8.dp))
         }
     }
 }

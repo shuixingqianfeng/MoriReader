@@ -144,7 +144,7 @@ fun BookDetailSheet(
         AlertDialog(
             onDismissRequest = { confirmDelete = false },
             title = { Text("从书库删除？") },
-            text = { Text("将删除 MoriReader 私有目录中的 EPUB、封面和阅读记录。原始文件不会受到影响。") },
+            text = { Text("将删除轻阅私有目录中的 EPUB、封面和阅读记录。原始文件不会受到影响。") },
             confirmButton = { TextButton(onClick = { confirmDelete = false; onDelete() }) { Text("删除", color = MaterialTheme.colorScheme.error) } },
             dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text("取消") } },
         )

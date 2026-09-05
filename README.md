@@ -1,4 +1,4 @@
-# MoriReader
+# 轻阅（MoriReader）
 
 MoriReader is a private, offline-first Android EPUB reader focused on Chinese
 light-novel typography, accurate reading statistics, and a restrained liquid
